@@ -129,3 +129,22 @@ def evaluate_condition(obj, value):
     else:
         return evaluate_condition(getattr(obj,elements[0]),
                                   value[len(elements[0])+2:])
+
+def find_groups(data):
+    obj = None
+    start = 0
+    end = 0
+    item = (start, end)
+    ret = []
+
+    for i, element in enumerate(data):
+        if i >= len(data) - 1:
+            ret.append((start, i))
+            break
+        if element != data[i + 1]:
+            ret.append((start, end))
+            start = i + 1
+            end = end + 1
+        else:
+            end = i + 1
+    return ret

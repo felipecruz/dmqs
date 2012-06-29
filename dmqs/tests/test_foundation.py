@@ -1,9 +1,21 @@
 from datetime import date, datetime
 
-from dmqs.foundation import evaluate_condition
+from dmqs.foundation import evaluate_condition, find_groups
 
-def type_and_instance(type_name,**kwargs):
+def type_and_instance(type_name, **kwargs):
     new_class = type(type_name, (object,), {})
+    instance = new_class()
+    instance.__dict__ = kwargs
+    return instance
+
+def type_and_instance_attr_eq(type_name, attr, **kwargs):
+    new_class = type(type_name, (object,),
+    {
+        '__eq__': lambda x, y: x.__dict__[attr] == y.__dict__[attr],
+        '__ne__': lambda x, y: x.__dict__[attr] != y.__dict__[attr],
+        '__lt__': lambda x, y: x.__dict__[attr] < y.__dict__[attr],
+        '__gt__': lambda x, y: x.__dict__[attr] > y.__dict__[attr]
+    })
     instance = new_class()
     instance.__dict__ = kwargs
     return instance
@@ -309,3 +321,50 @@ def test_condition_iregex():
                             memory=True)
 
     assert evaluate_condition(person, "name__iregex")(r'.*Am.*') == True
+
+def test_find_groups():
+    group1 = [1, 2, 2, 2, 3, 4, 4, 5, 6, 6, 6, 6]
+    group2 = list(range(12))
+
+    assert find_groups(group1) == [(0,0), (1,3), (4,4), (5,6), (7,7), (8,11)]
+    assert find_groups(group2) == [(i, i) for i in range(12)]
+
+def test_find_groups_models():
+    from datetime import date
+    person1 = type_and_instance_attr_eq('Person',
+                                        'age',
+                                        name="Name 1",
+                                        nickname="Nickname 1",
+                                        birthday=date(2011, 6, 20),
+                                        age=99,
+                                        memory=True)
+
+    person2 = type_and_instance_attr_eq('Person',
+                                        'age',
+                                        name="Name 2",
+                                        nickname="Nickname 2",
+                                        birthday=date(2011, 6, 22),
+                                        age=50,
+                                        memory=True)
+
+    person3 = type_and_instance_attr_eq('Person',
+                                        'age',
+                                        name="Name 3",
+                                        nickname="Nickname 3",
+                                        birthday=date(2011, 4, 20),
+                                        age=50,
+                                        memory=True)
+
+    person4 = type_and_instance_attr_eq('Person',
+                                        'age',
+                                        name="Name 4",
+                                        nickname="Nickname 4",
+                                        birthday=date(2010, 6, 20),
+                                        age=1,
+                                        memory=True)
+
+    from operator import attrgetter
+    data = sorted([person1, person2, person3, person4], key=attrgetter('age'))
+
+    print find_groups([d.age for d in data]) == [(0,0), (1,2), (3,3)]
+    print find_groups(data) == [(0,0), (1,2), (3,3)]
