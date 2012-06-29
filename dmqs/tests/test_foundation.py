@@ -335,7 +335,7 @@ def test_find_groups_models():
                                         'age',
                                         name="Name 1",
                                         nickname="Nickname 1",
-                                        birthday=date(2011, 6, 20),
+                                        birthday=date(2011, 6, 22),
                                         age=99,
                                         memory=True)
 
@@ -366,5 +366,9 @@ def test_find_groups_models():
     from operator import attrgetter
     data = sorted([person1, person2, person3, person4], key=attrgetter('age'))
 
-    print find_groups([d.age for d in data]) == [(0,0), (1,2), (3,3)]
-    print find_groups(data) == [(0,0), (1,2), (3,3)]
+    assert find_groups([d.age for d in data]) == [(0,0), (1,2), (3,3)]
+    assert find_groups(data) == [(0,0), (1,2), (3,3)]
+    assert find_groups(data, attr='age') == [(0,0), (1,2), (3,3)]
+
+    data = sorted([person1, person2, person3, person4], key=attrgetter('birthday'))
+    assert find_groups(data, attr='birthday') == [(0,0), (1,1), (2,3)]

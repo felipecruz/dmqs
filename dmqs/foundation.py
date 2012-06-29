@@ -130,7 +130,7 @@ def evaluate_condition(obj, value):
         return evaluate_condition(getattr(obj,elements[0]),
                                   value[len(elements[0])+2:])
 
-def find_groups(data):
+def find_groups(data, attr=None):
     obj = None
     start = 0
     end = 0
@@ -141,7 +141,11 @@ def find_groups(data):
         if i >= len(data) - 1:
             ret.append((start, i))
             break
-        if element != data[i + 1]:
+        if not attr and element != data[i + 1]:
+            ret.append((start, end))
+            start = i + 1
+            end = end + 1
+        elif attr and getattr(element, attr) != getattr(data[i + 1], attr):
             ret.append((start, end))
             start = i + 1
             end = end + 1
