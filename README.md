@@ -1,0 +1,4 @@
+dmqs
+====
+
+django memory queryset
