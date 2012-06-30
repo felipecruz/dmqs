@@ -107,11 +107,7 @@ def test_repository_delete():
     assert update1 == False
     assert update2 == False
 
-    delete1 = repository.delete(model_name, instance)
-    delete2 = repository.delete(model_name, instance2)
-
-    assert delete1 == True
-    assert delete2 == True
+    delete1 = repository.delete(model_name, [instance])
+    delete2 = repository.delete(model_name, [instance2])
 
     assert len(repository.get_models(model_name)) == 0
-

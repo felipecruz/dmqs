@@ -28,11 +28,5 @@ class Repository(object):
         return update
 
     def delete(self, model_name, value):
-        delete = False
-
-        for model in self.get_models(model_name):
-            if model.id == value.id:
-                self.get_models(model_name).remove(value)
-                delete = True
-
-        return delete
+        self.__dict__[model_name][:] = [x for x in self.__dict__[model_name]
+                                        if x not in value]
