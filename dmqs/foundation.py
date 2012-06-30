@@ -1,5 +1,6 @@
 import re
 from functools import partial
+from operator import attrgetter
 
 from repository import Repository
 
@@ -130,6 +131,7 @@ def evaluate_condition(obj, value):
         return evaluate_condition(getattr(obj,elements[0]),
                                   value[len(elements[0])+2:])
 
+
 def find_groups(data, attr=None):
     obj = None
     start = 0
@@ -152,3 +154,29 @@ def find_groups(data, attr=None):
         else:
             end = i + 1
     return ret
+
+
+def mixed_sort(data, properties, reverses, index=0):
+    from copy import copy
+    return_data = copy(data)
+
+    if index <= len(properties) -1:
+        return_data = sorted(return_data,
+                             key=attrgetter(properties[index]),
+                             reverse=reverses[index])
+        groups = find_groups(return_data, attr=properties[index])
+        for subgroup in groups:
+            if subgroup[0] == subgroup[1]:
+                continue
+            n = index + 1
+            return_data[subgroup[0]: subgroup[1] + 1]  = \
+                mixed_sort(data[subgroup[0]:
+                                 subgroup[1] + 1],
+                                 properties,
+                                 reverses,
+                                 index=n)
+        return return_data
+    else:
+        if not type(data) == list:
+            return [data]
+        return data

@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from dmqs.foundation import evaluate_condition, find_groups
+from dmqs.foundation import evaluate_condition, find_groups, mixed_sort
 
 def type_and_instance(type_name, **kwargs):
     new_class = type(type_name, (object,), {})
@@ -372,3 +372,52 @@ def test_find_groups_models():
 
     data = sorted([person1, person2, person3, person4], key=attrgetter('birthday'))
     assert find_groups(data, attr='birthday') == [(0,0), (1,1), (2,3)]
+
+def test_mixed_sort():
+    from datetime import date
+    person1 = type_and_instance_attr_eq('Person',
+                                        'age',
+                                        name="Name 1",
+                                        nickname="Nickname 1",
+                                        birthday=date(2011, 6, 22),
+                                        age=99,
+                                        memory=True)
+
+    person2 = type_and_instance_attr_eq('Person',
+                                        'age',
+                                        name="Name 2",
+                                        nickname="Nickname 2",
+                                        birthday=date(2011, 6, 22),
+                                        age=50,
+                                        memory=True)
+
+    person3 = type_and_instance_attr_eq('Person',
+                                        'age',
+                                        name="Name 3",
+                                        nickname="Nickname 3",
+                                        birthday=date(2011, 4, 20),
+                                        age=50,
+                                        memory=True)
+
+    person4 = type_and_instance_attr_eq('Person',
+                                        'age',
+                                        name="Name 4",
+                                        nickname="Nickname 4",
+                                        birthday=date(2010, 6, 20),
+                                        age=1,
+                                        memory=True)
+
+    data = [person1, person2, person3, person4]
+
+    assert mixed_sort(data, [], [], index=4) == data
+    assert mixed_sort(person1, [], [], index=4) == [person1]
+
+    assert mixed_sort(data, ['age', 'birthday'], [False, True]) == \
+           [person4, person2, person3, person1]
+    assert mixed_sort(data, ['age', 'birthday'], [False, False]) == \
+           [person4, person3, person2, person1]
+
+    assert mixed_sort(data, ['age', 'birthday'], [True, False]) == \
+           [person1, person2, person3, person4]
+    assert mixed_sort(data, ['age', 'birthday'], [True, True]) == \
+           [person1, person3, person2, person4]
