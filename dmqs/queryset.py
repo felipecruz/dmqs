@@ -78,10 +78,9 @@ class MemoryQuerySet(object):
         pass
 
     def update(self, **kwargs):
-        data = []
         for model in self.data:
             model.__dict__.update(kwargs)
-        return self._data_qs(data)
+        return len(self.data)
 
     def exists(self):
         pass
@@ -111,6 +110,7 @@ class MemoryQuerySet(object):
         return self._data_qs(data)
 
     def select_related(self, *args):
+        # references are alredy in memory
         return self.all()
 
     def all(self):

@@ -205,3 +205,41 @@ def test_query_filter_other_conditions():
                                 nickname__startswith="Nick",
                                 age__gte=30,
                                 name__in=["Name 2"])) == 2
+
+def test_query_update():
+    from datetime import date
+    person1 = type_and_instance('Person',
+                                name="Name 1",
+                                nickname="Nickname 1",
+                                birthday=date(2011, 6, 20),
+                                age=30,
+                                memory=True)
+
+    person2 = type_and_instance('Person',
+                                name="Name 2",
+                                nickname="Nickname 2",
+                                birthday=date(2011, 6, 22),
+                                age=57,
+                                memory=True)
+
+    person3 = type_and_instance('Person',
+                                name="Name 3",
+                                nickname="Nickname 3",
+                                birthday=date(2011, 4, 20),
+                                age=30,
+                                memory=True)
+
+    person4 = type_and_instance('Person',
+                                name="Name 4",
+                                nickname="Nickname 4",
+                                birthday=date(2010, 6, 20),
+                                age=30,
+                                memory=True)
+
+    data = [person1, person2, person3, person4]
+    queryset = MemoryQuerySet(person1.__class__, data=data)
+
+    assert queryset.filter(age=30).update(birthday=date(2011, 01, 04)) == 3
+    assert person1.birthday == date(2011, 01, 04)
+    assert person3.birthday == date(2011, 01, 04)
+    assert person4.birthday == date(2011, 01, 04)
