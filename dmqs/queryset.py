@@ -8,6 +8,8 @@ from repository import Repository
 repository = Repository()
 
 class MemoryQuerySet(object):
+    fetch_from_repo = False
+
     '''
         This quertset fecthes objects from memory. It will emulate all
         public QuerySet methods to be fully django compatible
@@ -39,10 +41,10 @@ class MemoryQuerySet(object):
         pass
 
     def count(self):
-        if not self.data:
+        if not self._safe_data:
             return 0
 
-        return len(self.data)
+        return len(self._safe_data)
 
     def get(self, *args, **kwargs):
         data = []
@@ -75,18 +77,20 @@ class MemoryQuerySet(object):
         pass
 
     def delete(self):
-        pass
+        repository.delete(self.model_name, self.data)
+        self.data = repository.get_models(self.model_name)
+        MemoryQuerySet.fetch_from_repo = True
 
     def update(self, **kwargs):
-        for model in self.data:
+        for model in self._safe_data:
             model.__dict__.update(kwargs)
-        return len(self.data)
+        return len(self._safe_data)
 
     def exists(self):
         pass
 
     def order_by(self, *args):
-        data = copy.copy(self.data)
+        data = copy.copy(self._safe_data)
         properties = list(copy.copy(args))
         reverses = []
 
@@ -115,13 +119,13 @@ class MemoryQuerySet(object):
 
     def all(self):
         if self.data:
-            return self._data_qs(self.data)
+            return self._data_qs(self._safe_data)
 
         return self._data_qs([])
 
     def filter(self, **kwargs):
         data = []
-        for model in self.data:
+        for model in self._safe_data:
             if all([evaluate_condition(model, k)(kwargs[k])
                     for k, v in kwargs.items()]):
                 data.append(model)
@@ -130,9 +134,15 @@ class MemoryQuerySet(object):
 
     def exclude(self, **kwargs):
         data = copy.copy(self.data)
-        for model in self.data:
+        for model in self._safe_data:
             if all([evaluate_condition(model, k)(kwargs[k])
                     for k, v in kwargs.items()]):
                 data.remove(model)
 
         return self._data_qs(data)
+
+    @property
+    def _safe_data(self):
+        if self.fetch_from_repo:
+            return repository.get_models(self.model_name)
+        return self.data

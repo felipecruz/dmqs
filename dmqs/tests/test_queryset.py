@@ -1,21 +1,33 @@
 from dmqs.queryset import MemoryQuerySet
+from dmqs.repository import Repository
 
-def type_and_instance(type_name,**kwargs):
-    new_class = type(type_name, (object,), {})
+def type_and_instance(type_name, **kwargs):
+    _id = 'id'
+    new_class = type(type_name, (object,), {
+        '__eq__': lambda x, y: x.__dict__[_id] == y.__dict__[_id],
+        '__ne__': lambda x, y: x.__dict__[_id] != y.__dict__[_id],
+        '__lt__': lambda x, y: x.__dict__[_id] < y.__dict__[_id],
+        '__gt__': lambda x, y: x.__dict__[_id] > y.__dict__[_id]
+    })
     instance = new_class()
     instance.__dict__ = kwargs
     return instance
 
-def type_and_instance_attr_eq(type_name, attr, **kwargs):
+instance_id = 1
+
+def type_and_instance_attr_eq(type_name, **kwargs):
+    global instance_id
+    attr = 'id'
+
     new_class = type(type_name, (object,),
     {
-        '__eq__': lambda x, y: x.__dict__[attr] == y.__dict__[attr],
-        '__ne__': lambda x, y: x.__dict__[attr] != y.__dict__[attr],
-        '__lt__': lambda x, y: x.__dict__[attr] < y.__dict__[attr],
-        '__gt__': lambda x, y: x.__dict__[attr] > y.__dict__[attr]
+        '__eq__': lambda x, y: x.id == y.id,
+        '__ne__': lambda x, y: x.id != y.id,
     })
     instance = new_class()
     instance.__dict__ = kwargs
+    instance.__dict__['id'] = instance_id
+    instance_id += 1
     return instance
 
 def test_query_all():
@@ -55,17 +67,17 @@ def test_query_filter():
            set([person2])
 
 def test_query_exclude():
-    person1 = type_and_instance('Person',
+    person1 = type_and_instance_attr_eq('Person',
                                 name="Name 1",
                                 nickname="Nickname 1",
                                 memory=True)
 
-    person2 = type_and_instance('Person',
+    person2 = type_and_instance_attr_eq('Person',
                                 name="Name 2",
                                 nickname="Nickname 2",
                                 memory=True)
 
-    person3 = type_and_instance('Person',
+    person3 = type_and_instance_attr_eq('Person',
                                 name="Name 2",
                                 nickname="Nickname 3",
                                 memory=True)
@@ -243,3 +255,48 @@ def test_query_update():
     assert person1.birthday == date(2011, 01, 04)
     assert person3.birthday == date(2011, 01, 04)
     assert person4.birthday == date(2011, 01, 04)
+
+def test_query_delete():
+    from datetime import date
+
+    person1 = type_and_instance_attr_eq('Person',
+                                name="Name 1",
+                                nickname="Nickname 1",
+                                birthday=date(2011, 6, 20),
+                                age=30,
+                                memory=True)
+
+    person2 = type_and_instance_attr_eq('Person',
+                                name="Name 2",
+                                nickname="Nickname 2",
+                                birthday=date(2011, 6, 22),
+                                age=57,
+                                memory=True)
+
+    person3 = type_and_instance_attr_eq('Person',
+                                name="Name 3",
+                                nickname="Nickname 3",
+                                birthday=date(2011, 4, 20),
+                                age=30,
+                                memory=True)
+
+    person4 = type_and_instance_attr_eq('Person',
+                                name="Name 4",
+                                nickname="Nickname 4",
+                                birthday=date(2010, 6, 20),
+                                age=30,
+                                memory=True)
+
+    data = [person1, person2, person3, person4]
+
+    queryset = MemoryQuerySet(person1.__class__, data=data)
+    repository = Repository()
+    repository.__dict__['Person'] = data
+
+    queryset.filter(age__gte=10,birthday__lte=date(2011, 05, 05)).delete()
+    assert len(queryset.all()) == 2
+    assert queryset.all().count() == 2
+
+    queryset = MemoryQuerySet(person1.__class__, data=data)
+    assert len(queryset.all()) == 2
+    assert queryset.all().count() == 2
