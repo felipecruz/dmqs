@@ -26,3 +26,13 @@ class Repository(object):
             self.get_models(model_name).append(value)
 
         return update
+
+    def delete(self, model_name, value):
+        delete = False
+
+        for model in self.get_models(model_name):
+            if model.id == value.id:
+                self.get_models(model_name).remove(value)
+                delete = True
+
+        return delete

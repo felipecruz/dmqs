@@ -92,3 +92,26 @@ def test_repository_get_models():
     assert update1 == False
     assert update2 == False
     assert repository.get_models(model_name) == [instance, instance2]
+
+def test_repository_delete():
+    repository = Repository()
+    repository.clean()
+
+    model_name = 'ModelName'
+    instance = model_mock(model_name, 1)
+    update1 = repository.save(model_name, instance)
+
+    instance2 = model_mock(model_name, 2)
+    update2 = repository.save(model_name, instance2)
+
+    assert update1 == False
+    assert update2 == False
+
+    delete1 = repository.delete(model_name, instance)
+    delete2 = repository.delete(model_name, instance2)
+
+    assert delete1 == True
+    assert delete2 == True
+
+    assert len(repository.get_models(model_name)) == 0
+
