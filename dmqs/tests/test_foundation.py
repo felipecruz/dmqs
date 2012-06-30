@@ -409,9 +409,6 @@ def test_mixed_sort():
 
     data = [person1, person2, person3, person4]
 
-    assert mixed_sort(data, [], [], index=4) == data
-    assert mixed_sort(person1, [], [], index=4) == [person1]
-
     assert mixed_sort(data, ['age', 'birthday'], [False, True]) == \
            [person4, person2, person3, person1]
     assert mixed_sort(data, ['age', 'birthday'], [False, False]) == \

@@ -155,8 +155,13 @@ def find_groups(data, attr=None):
             end = i + 1
     return ret
 
+def mixed_sort(data, properties, _reverses):
+    reverses = list(reversed(_reverses))
+    for i, prop in enumerate(list(reversed(properties))):
+        data = sorted(data, key=attrgetter(prop), reverse=reverses[i])
+    return data
 
-def mixed_sort(data, properties, reverses, index=0):
+def _mixed_sort(data, properties, reverses, index=0):
     from copy import copy
     return_data = copy(data)
 
