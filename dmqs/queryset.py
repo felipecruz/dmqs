@@ -1,4 +1,8 @@
-from foundation import evaluate_condition
+import copy
+
+from operator import attrgetter
+
+from foundation import evaluate_condition, find_groups, mixed_sort
 from repository import Repository
 
 repository = Repository()
@@ -30,9 +34,6 @@ class MemoryQuerySet(object):
 
     def _data_qs(self, data):
         return MemoryQuerySet(self.model, data=data)
-
-    def iterator(self):
-        pass
 
     def aggregate(self, *args, **kwargs):
         pass
@@ -85,8 +86,29 @@ class MemoryQuerySet(object):
     def exists(self):
         pass
 
-    def order_by(self, prop):
-        return self._data_qs(self.data)
+    def order_by(self, *args):
+        data = copy.copy(self.data)
+        properties = list(copy.copy(args))
+        reverses = []
+
+        for i, arg in enumerate(args):
+            if arg.startswith('-'):
+                properties[i] = arg[1:]
+                reverses.append(True)
+            else:
+                reverses.append(False)
+                properties[i] = arg
+
+        # all false (age, birthday)
+        if not any(reverses):
+            data = sorted(data, key=attrgetter(*properties))
+        # all True (-age, -birthday)
+        elif all(reverses):
+            data = sorted(data, key=attrgetter(*properties), reverse=True)
+        # mixed behaviour (age, -birthday)
+        else:
+            data = mixed_sort(data, properties, reverses)
+        return self._data_qs(data)
 
     def select_related(self, *args):
         return self.all()
@@ -103,5 +125,14 @@ class MemoryQuerySet(object):
             if all([evaluate_condition(model, k)(kwargs[k])
                     for k, v in kwargs.items()]):
                 data.append(model)
+
+        return self._data_qs(data)
+
+    def exclude(self, **kwargs):
+        data = copy.copy(self.data)
+        for model in self.data:
+            if all([evaluate_condition(model, k)(kwargs[k])
+                    for k, v in kwargs.items()]):
+                data.remove(model)
 
         return self._data_qs(data)
