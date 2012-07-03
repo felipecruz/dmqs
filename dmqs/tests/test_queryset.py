@@ -337,6 +337,7 @@ def test_queryset_get():
     data = [person1, person2, person3, person4]
 
     queryset = MemoryQuerySet(person1.__class__, data=data)
+    MemoryQuerySet.fetch_from_repo = False
 
     assert queryset.get(name="Name 1") == person1
     assert queryset.get(name="Name 1").name == person1.name
@@ -349,3 +350,28 @@ def test_queryset_get():
 
     with pytest.raises(MultipleObjectsReturned):
         queryset.get(nickname="Nickname 2")
+
+def test_queryset_create():
+    class Dummy(object):
+        def __init__(self, **kwargs):
+            self.__dict__ = kwargs
+
+    queryset = MemoryQuerySet(Dummy, data=[])
+    assert len(queryset.all()) == 0
+
+    queryset.create(id=1, name="Name 1", age=20)
+    assert len(queryset.all()) == 1
+    assert queryset.get(age=20).name == "Name 1"
+
+    queryset.create(id=2, name="Name 2", age=25)
+    assert len(queryset.all()) == 2
+    assert queryset.get(age=20).name == "Name 1"
+    assert queryset.get(age=25).name == "Name 2"
+
+    queryset2 = MemoryQuerySet(Dummy, data=[])
+    MemoryQuerySet.fetch_from_repo = True
+    assert len(queryset2.all()) == 2
+    assert queryset2.get(age=20).name == "Name 1"
+    assert queryset2.get(age=25).name == "Name 2"
+
+

@@ -52,7 +52,7 @@ class MemoryQuerySet(object):
         if 'pk' in kwargs:
             kwargs['id'] = kwargs.pop('pk')
 
-        for model in self.data:
+        for model in self._safe_data:
             if all([evaluate_condition(model, k)(kwargs[k])
                     for k, v in kwargs.items()]):
                 data.append(model)
@@ -66,7 +66,10 @@ class MemoryQuerySet(object):
         return data[0]
 
     def create(self, **kwargs):
-        pass
+        model_instance = self.model(**kwargs)
+        self.data.append(model_instance)
+        repository.save(self.model_name, model_instance)
+        MemoryQuerySet.fetch_from_repo = True
 
     def bulk_create(self, objs):
         pass
@@ -122,10 +125,7 @@ class MemoryQuerySet(object):
         return self.all()
 
     def all(self):
-        if self.data:
-            return self._data_qs(self._safe_data)
-
-        return self._data_qs([])
+        return self._data_qs(self._safe_data)
 
     def filter(self, **kwargs):
         data = []
