@@ -70,6 +70,7 @@ class MemoryQuerySet(object):
         self.data.append(model_instance)
         repository.save(self.model_name, model_instance)
         MemoryQuerySet.fetch_from_repo = True
+        return model_instance
 
     def bulk_create(self, objs):
         pass

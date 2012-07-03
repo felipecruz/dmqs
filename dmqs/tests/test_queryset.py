@@ -359,11 +359,13 @@ def test_queryset_create():
     queryset = MemoryQuerySet(Dummy, data=[])
     assert len(queryset.all()) == 0
 
-    queryset.create(id=1, name="Name 1", age=20)
+    model = queryset.create(id=1, name="Name 1", age=20)
+    assert isinstance(model, Dummy)
     assert len(queryset.all()) == 1
     assert queryset.get(age=20).name == "Name 1"
 
-    queryset.create(id=2, name="Name 2", age=25)
+    model = queryset.create(id=2, name="Name 2", age=25)
+    assert isinstance(model, Dummy)
     assert len(queryset.all()) == 2
     assert queryset.get(age=20).name == "Name 1"
     assert queryset.get(age=25).name == "Name 2"
