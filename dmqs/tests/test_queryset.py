@@ -1,3 +1,5 @@
+import pytest
+
 from dmqs.queryset import MemoryQuerySet
 from dmqs.repository import Repository
 
@@ -300,3 +302,50 @@ def test_query_delete():
     queryset = MemoryQuerySet(person1.__class__, data=data)
     assert len(queryset.all()) == 2
     assert queryset.all().count() == 2
+
+def test_queryset_get():
+    from datetime import date
+
+    person1 = type_and_instance_attr_eq('Person',
+                                name="Name 1",
+                                nickname="Nickname 1",
+                                birthday=date(2011, 6, 20),
+                                age=30,
+                                memory=True)
+
+    person2 = type_and_instance_attr_eq('Person',
+                                name="Name 2",
+                                nickname="Nickname 2",
+                                birthday=date(2011, 6, 22),
+                                age=57,
+                                memory=True)
+
+    person3 = type_and_instance_attr_eq('Person',
+                                name="Name 3",
+                                nickname="Nickname 3",
+                                birthday=date(2011, 4, 20),
+                                age=30,
+                                memory=True)
+
+    person4 = type_and_instance_attr_eq('Person',
+                                name="Name 4",
+                                nickname="Nickname 2",
+                                birthday=date(2010, 6, 20),
+                                age=30,
+                                memory=True)
+
+    data = [person1, person2, person3, person4]
+
+    queryset = MemoryQuerySet(person1.__class__, data=data)
+
+    assert queryset.get(name="Name 1") == person1
+    assert queryset.get(name="Name 1").name == person1.name
+
+    from django.core.exceptions import MultipleObjectsReturned, \
+                                       ObjectDoesNotExist
+
+    with pytest.raises(ObjectDoesNotExist):
+        queryset.get(name="Nobody")
+
+    with pytest.raises(MultipleObjectsReturned):
+        queryset.get(nickname="Nickname 2")

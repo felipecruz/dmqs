@@ -1,5 +1,6 @@
 import copy
 
+from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from operator import attrgetter
 
 from foundation import evaluate_condition, find_groups, mixed_sort
@@ -57,7 +58,10 @@ class MemoryQuerySet(object):
                 data.append(model)
 
         if len(data) > 1:
-            raise Exception("more than 1 exception")
+            raise MultipleObjectsReturned()
+
+        if len(data) == 0:
+            raise ObjectDoesNotExist()
 
         return data[0]
 
