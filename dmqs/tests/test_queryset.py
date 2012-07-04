@@ -2,6 +2,7 @@ import pytest
 
 from dmqs.queryset import MemoryQuerySet
 from dmqs.repository import Repository
+from dmqs.aggregation import Max, Min, Sum, Avg, Count
 
 def type_and_instance(type_name, **kwargs):
     _id = 'id'
@@ -377,3 +378,49 @@ def test_queryset_create():
     assert queryset2.get(age=25).name == "Name 2"
 
 
+def test_queryset_annotate():
+    def type_and_instance(type_name, **kwargs):
+        new_class = type(type_name, (object,), {})
+        instance = new_class()
+        instance.__dict__ = kwargs
+        return instance
+
+    account1 = type_and_instance('Account',
+                                credit=300)
+    account2 = type_and_instance('Account',
+                                credit=200)
+    account3 = type_and_instance('Account',
+                                credit=100)
+
+    accounts = [account1, account2, account3]
+
+    account11 = type_and_instance('Account',
+                                credit=300)
+    account12 = type_and_instance('Account',
+                                credit=200)
+
+    accounts1 = [account11, account12]
+
+    person = type_and_instance('Person',
+                               name="Name 4",
+                               nickname="Nickname 4",
+                               accounts=accounts,
+                               age=1,
+                               memory=True)
+
+    person1 = type_and_instance('Person',
+                               name="Name 4",
+                               nickname="Nickname 4",
+                               accounts=accounts1,
+                               age=1,
+                               memory=True)
+
+    count = Count('accounts')
+
+    data = [person, person1]
+
+    queryset = MemoryQuerySet(person.__class__, data=data)
+    result = list(queryset.annotate(num_accounts=Count('accounts')))
+
+    assert result[0].__dict__['num_accounts'] == 3
+    assert result[1].__dict__['num_accounts'] == 2

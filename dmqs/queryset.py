@@ -41,6 +41,11 @@ class MemoryQuerySet(object):
     def aggregate(self, *args, **kwargs):
         pass
 
+    def annotate(self, **kwargs):
+        for k, v in kwargs.items():
+            v.return_value(self.data, k)
+        return self._data_qs(self.data)
+
     def count(self):
         if not self._safe_data:
             return 0

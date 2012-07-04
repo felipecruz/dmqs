@@ -58,8 +58,10 @@ class Count(object):
     def __init__(self, property_name):
         self.property_name = property_name
 
-    def return_value(self, data):
+    def return_value(self, data, aggregate_name=None):
         for d in data:
-            d.__dict__["{0}__count".format(self.property_name)] = \
+            if not aggregate_name:
+                aggregate_name = "{0}__count".format(self.property_name)
+            d.__dict__[aggregate_name] = \
                                     len(get_attribute(d, self.property_name))
         return data
