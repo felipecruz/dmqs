@@ -1,6 +1,7 @@
 from datetime import date, datetime
 
-from dmqs.foundation import evaluate_condition, find_groups, mixed_sort
+from dmqs.foundation import evaluate_condition, find_groups, mixed_sort, \
+                            get_attribute
 
 def type_and_instance(type_name, **kwargs):
     new_class = type(type_name, (object,), {})
@@ -239,8 +240,6 @@ def test_condition_year():
 
 
 def test_condition_month():
-    from datetime import date, datetime
-
     today = date.today()
     now = datetime.now()
 
@@ -261,8 +260,6 @@ def test_condition_month():
     assert evaluate_condition(person, "appointment__month")(today.month) == True
 
 def test_condition_day():
-    from datetime import date, datetime
-
     today = date.today()
     now = datetime.now()
 
@@ -283,8 +280,6 @@ def test_condition_day():
     assert evaluate_condition(person, "appointment__day")(today.day) == True
 
 def test_condition_weekday():
-    from datetime import date, datetime
-
     today = date.today()
     now = datetime.now()
 
@@ -330,7 +325,6 @@ def test_find_groups():
     assert find_groups(group2) == [(i, i) for i in range(12)]
 
 def test_find_groups_models():
-    from datetime import date
     person1 = type_and_instance_attr_eq('Person',
                                         'age',
                                         name="Name 1",
@@ -418,3 +412,29 @@ def test_mixed_sort():
            [person1, person2, person3, person4]
     assert mixed_sort(data, ['age', 'birthday'], [True, True]) == \
            [person1, person3, person2, person4]
+
+
+def test_get_attribute():
+    person = type_and_instance_attr_eq('Person',
+                                       'age',
+                                       name="Name 4",
+                                       nickname="Nickname 4",
+                                       birthday=date(2011, 01, 04),
+                                       age=1,
+                                       memory=True)
+
+    account = type_and_instance('Account',
+                                owner=person)
+
+    bank = type_and_instance('Bank',
+                             account=account)
+
+    universe = type_and_instance('Universe',
+                                 bank=bank)
+
+    assert get_attribute(account, "owner__birthday") == date(2011, 01, 04)
+    assert get_attribute(bank, "account__owner__age") == 1
+    assert get_attribute(bank, "account__owner__name") == "Name 4"
+    assert get_attribute(universe, "bank__account__owner__name") == "Name 4"
+    assert get_attribute(universe, "bank__account__owner") == person
+

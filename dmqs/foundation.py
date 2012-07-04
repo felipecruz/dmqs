@@ -132,6 +132,15 @@ def evaluate_condition(obj, value):
                                   value[len(elements[0])+2:])
 
 
+def get_attribute(value, property_name):
+    elements = property_name.split("__")
+    if elements == [property_name]:
+        return value.__dict__[property_name]
+    else:
+        return get_attribute(value.__dict__[elements[0]],
+                             '__'.join(elements[1:]))
+
+
 def find_groups(data, attr=None):
     obj = None
     start = 0
