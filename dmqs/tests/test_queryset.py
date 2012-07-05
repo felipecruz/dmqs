@@ -424,3 +424,44 @@ def test_queryset_annotate():
 
     assert result[0].__dict__['num_accounts'] == 3
     assert result[1].__dict__['num_accounts'] == 2
+
+def test_queryset_aggregate():
+    def type_and_instance(type_name, **kwargs):
+        new_class = type(type_name, (object,), {})
+        instance = new_class()
+        instance.__dict__ = kwargs
+        return instance
+
+    account1 = type_and_instance('Account',
+                                credit=100)
+    account2 = type_and_instance('Account',
+                                credit=200)
+    account3 = type_and_instance('Account',
+                                credit=100)
+    account4 = type_and_instance('Account',
+                                credit=600)
+    account5 = type_and_instance('Account',
+                                credit=500)
+
+    accounts = [account1, account2, account3, account4, account5]
+
+
+    queryset = MemoryQuerySet(account1.__class__, data=accounts)
+
+    assert queryset.aggregate(max_credit=Max('credit')) == \
+           dict(max_credit=600)
+
+    assert queryset.aggregate(max_credit=Max('credit'), min_credit=Min('credit')) == \
+           dict(max_credit=600, min_credit=100)
+
+    assert queryset.aggregate(min_credit=Min('credit')) == \
+           dict(min_credit=100)
+
+    assert queryset.aggregate(sum_credit=Sum('credit')) == \
+           dict(sum_credit=1500)
+
+    assert queryset.aggregate(avg_credit=Avg('credit')) == \
+           dict(avg_credit=300)
+
+    assert queryset.aggregate(avg_credit=Avg('credit'), sum_credit=Sum('credit')) == \
+           dict(avg_credit=300, sum_credit=1500)

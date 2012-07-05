@@ -38,8 +38,11 @@ class MemoryQuerySet(object):
     def _data_qs(self, data):
         return MemoryQuerySet(self.model, data=data)
 
-    def aggregate(self, *args, **kwargs):
-        pass
+    def aggregate(self, **kwargs):
+        _result = dict()
+        for k, v in kwargs.items():
+            _result[k] = v.return_value(self.data)
+        return _result
 
     def annotate(self, **kwargs):
         for k, v in kwargs.items():
