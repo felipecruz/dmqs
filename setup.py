@@ -8,6 +8,4 @@ setup(name='dmqs',
       url='http://dmqs.readthedocs.org',
       install_requires=["django>=1.2.5"],
       license="BSD",
-      description="django queryset and manager" \
-                  "implementation in memory",
       packages=['dmqs'])
