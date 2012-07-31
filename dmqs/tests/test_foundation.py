@@ -88,7 +88,7 @@ def test_condition_isnull():
                                 age=20,
                                 memory=True)
 
-    assert evaluate_condition(person, "nickname__isnull") == True
+    assert evaluate_condition(person, "nickname__isnull")() == True
 
 def test_nested_condition_equal():
     person = type_and_instance('Person',
@@ -133,7 +133,7 @@ def test_nested_condition_isnull():
 
     dog = type_and_instance('Dog', owner=person, memory=True)
 
-    assert evaluate_condition(dog, "owner__nickname__isnull") == True
+    assert evaluate_condition(dog, "owner__nickname__isnull")() == True
 
 def test_condition_contains():
     person = type_and_instance('Person',

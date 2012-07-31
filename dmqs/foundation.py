@@ -47,12 +47,12 @@ def lte_condition(model_instance, prop, arg1):
 def gte_condition(model_instance, prop, arg1):
     return model_instance.__dict__[prop] >= arg1
 
-def isnull_condition(model_instance, prop):
+def isnull_condition(model_instance, prop, arg1=None):
     cond = False
     try:
         cond = model_instance.__dict__[prop] == None
     except KeyError:
-        return True
+        cond = getattr(model_instance, prop) == None
     return cond
 
 def in_condition(model_instance, prop, arg1):
@@ -110,7 +110,7 @@ def evaluate_condition(obj, value):
     elif elements[1] == "gte":
         return partial(gte_condition, obj, elements[0])
     elif elements[1] == "isnull":
-        return partial(isnull_condition, obj, elements[0])()
+        return partial(isnull_condition, obj, elements[0])
     elif elements[1] == "in":
         return partial(in_condition, obj, elements[0])
     elif elements[1] == "range":
