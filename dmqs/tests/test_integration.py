@@ -11,7 +11,7 @@ from dmqs.integration.memorify_django_model import *
 from django.test.utils import setup_test_environment, \
                               teardown_test_environment
 
-from django_app.models import Friend, Dog
+from django_app.models import Friend, Dog, BestFriend, Friendship
 
 from dmqs.manager import MemoryManager
 
@@ -53,7 +53,9 @@ def test_memorify_foreign_key():
     memory_person = Friend.objects.get(id=1)
 
     assert memory_person.dog == dog
+    assert memory_person.dog.name == dog.name
     assert memory_person.other_dog == other_dog
+    assert memory_person.other_dog.name == other_dog.name
 
     connection.creation.destroy_test_db(old_name, 1)
     teardown_test_environment()
@@ -86,3 +88,69 @@ def test_m2m():
 
     assert isinstance(other_friend.__dict__['friends'], MemoryManager)
     assert list(other_friend.__dict__['friends'].all()) == [friend]
+
+    connection.creation.destroy_test_db(old_name, 1)
+    teardown_test_environment()
+
+def test_m2m_with_through():
+    setup_test_environment()
+    old_name = "django_app"
+
+    from django.db import connection
+    from datetime import date
+    connection.creation.create_test_db(verbosity=1, autoclobber=True)
+
+    from dmqs.repository import Repository
+    repository = Repository()
+
+    friend = Friend(name="Friend")
+    friend.save()
+
+    other_friend = Friend(name="Name")
+    other_friend.save()
+
+    other_friend2 = Friend(name="Name2")
+    other_friend2.save()
+
+    best_friend = BestFriend()
+    best_friend.person = other_friend
+    best_friend.nickname = "nickname"
+    best_friend.save()
+
+    best_friend2 = BestFriend()
+    best_friend2.person = other_friend2
+    best_friend2.nickname = "nickname2"
+    best_friend2.save()
+
+    friendship = Friendship()
+    friendship.since = date.today()
+    friendship.best_friend1 = best_friend
+    friendship.best_friend2 = friend
+    friendship.save()
+
+    friendship = Friendship()
+    friendship.since = date.today()
+    friendship.best_friend1 = best_friend2
+    friendship.best_friend2 = friend
+    friendship.save()
+
+    assert list(friend.best_friends.all()) == [best_friend, best_friend2]
+
+    repository.save(Friend.__name__, other_friend)
+    repository.save(Friend.__name__, other_friend2)
+    repository.save(Friend.__name__, friend)
+    repository.save(BestFriend.__name__, best_friend)
+    repository.save(BestFriend.__name__, best_friend2)
+    repository.save(Friendship.__name__, friendship)
+
+    best_friend.m2m_data = {'best_friends': [1,2]}
+
+    memorify_m2m(friend, best_friend.m2m_data)
+
+    assert isinstance(friend.__dict__['best_friends'], MemoryManager)
+    assert list(friend.__dict__['best_friends'].all()) == [best_friend, best_friend2]
+    assert list(friend.__dict__['best_friends'].filter(nickname__endswith="2")) == [best_friend2]
+
+    connection.creation.destroy_test_db(old_name, 1)
+    teardown_test_environment()
+
