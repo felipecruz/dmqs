@@ -84,6 +84,10 @@ def test_m2m():
 
     other_friend.m2m_data = {'friends': [1]}
 
+    Friend.objects.all().delete()
+    BestFriend.objects.all().delete()
+    Friendship.objects.all().delete()
+
     memorify_m2m(other_friend, other_friend.m2m_data)
 
     assert isinstance(other_friend.__dict__['friends'], MemoryManager)
@@ -145,6 +149,10 @@ def test_m2m_with_through():
 
     best_friend.m2m_data = {'best_friends': [1,2]}
 
+    Friend.objects.all().delete()
+    BestFriend.objects.all().delete()
+    Friendship.objects.all().delete()
+
     memorify_m2m(friend, best_friend.m2m_data)
 
     assert isinstance(friend.__dict__['best_friends'], MemoryManager)
@@ -153,4 +161,3 @@ def test_m2m_with_through():
 
     connection.creation.destroy_test_db(old_name, 1)
     teardown_test_environment()
-
