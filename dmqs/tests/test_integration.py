@@ -37,19 +37,19 @@ def test_memorify_foreign_key():
 
     repository.save(Dog.__name__, other_dog)
 
-    person = Friend(name="Name")
-    person.dog = dog
-    person.other_dog = other_dog
-    person.save()
+    friend = Friend(name="Name")
+    friend.dog = dog
+    friend.other_dog = other_dog
+    friend.save()
 
-    repository.save(Friend.__name__, person)
+    repository.save(Friend.__name__, friend)
 
-    assert person.dog == dog
-    assert person.other_dog == other_dog
+    assert friend.dog == dog
+    assert friend.other_dog == other_dog
 
-    memorify_single_relations(person)
+    memorify_single_relations(friend)
 
-    person.objects = MemoryManager(Friend)
+    friend.objects = MemoryManager(Friend)
     memory_person = Friend.objects.get(id=1)
 
     assert memory_person.dog == dog
@@ -71,18 +71,18 @@ def test_m2m():
     friend = Friend(name="Friend")
     friend.save()
 
-    person = Friend(name="Name")
-    person.save()
+    other_friend = Friend(name="Name")
+    other_friend.save()
 
-    person.friends.add(friend)
-    person.save()
+    other_friend.friends.add(friend)
+    other_friend.save()
 
-    repository.save(Friend.__name__, person)
+    repository.save(Friend.__name__, other_friend)
     repository.save(Friend.__name__, friend)
 
-    person.m2m_data = {'friends': [1]}
+    other_friend.m2m_data = {'friends': [1]}
 
-    memorify_m2m(person, person.m2m_data)
+    memorify_m2m(other_friend, other_friend.m2m_data)
 
-    assert isinstance(person.__dict__['friends'], MemoryManager)
-    assert list(person.__dict__['friends'].all()) == [friend]
+    assert isinstance(other_friend.__dict__['friends'], MemoryManager)
+    assert list(other_friend.__dict__['friends'].all()) == [friend]
