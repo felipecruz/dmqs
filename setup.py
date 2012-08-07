@@ -8,4 +8,4 @@ setup(name='dmqs',
       url='http://dmqs.readthedocs.org',
       install_requires=["django>=1.2.5"],
       license="BSD",
-      packages=['dmqs'])
+      packages=['dmqs', 'dmqs.integration'])

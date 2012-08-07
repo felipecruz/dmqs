@@ -1,6 +1,3 @@
-from django.conf import settings
-settings.configure(DEBUG=True)
-
 from dmqs.manager import MemoryManager
 from dmqs.repository import Repository
 
