@@ -3,6 +3,7 @@ from dmqs.repository import Repository
 def model_mock(model_name):
     model = type(model_name, (object,), dict(id=lambda s: s.__dict__['id']))
     instance = model()
+    instance.id = None
     return instance
 
 def test_repository_shared_state():

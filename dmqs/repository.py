@@ -25,7 +25,7 @@ class Repository(object):
                 update = True
 
         if not update:
-            if not 'id' in value.__dict__:
+            if getattr(value, 'id') == None:
                 self.__dict__['ids'][model_name] += 1
                 value.id = self.__dict__['ids'][model_name]
             self.get_models(model_name).append(value)
