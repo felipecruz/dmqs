@@ -35,9 +35,23 @@ def fetch_relation_id(object, name):
         raise Exception("Unknow Field {0}".format(name))
 
 def patch_models(app_name):
+    unpatch_info = {}
     app = get_app(app_name)
     for model in get_models(app):
+        unpatch_info[model] = model.objects
         model.objects = MemoryManager(model)
 
     from django.db.models import Model
+    default_save = Model.save
     Model.save = memory_save
+
+    return unpatch_info, default_save
+
+def unpatch_models(app_name, unpatch_info, default_save):
+    from django.db.models import Model
+    Model.save = default_save
+
+    app = get_app(app_name)
+    for model in get_models(app):
+        model.objects = unpatch_info[model]
+

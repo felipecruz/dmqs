@@ -18,6 +18,11 @@ from dmqs.manager import MemoryManager
 import pytest
 
 def test_memorify_foreign_key():
+    '''
+        The idea here is to create objects on the database, memorify
+        single relations (ForeignKey and OneToOne) and then check if
+        and check if the relation returns expected data from memory
+    '''
     setup_test_environment()
     old_name = "django_app"
 
@@ -49,16 +54,22 @@ def test_memorify_foreign_key():
 
     memorify_single_relations(friend)
 
-    friend.objects = MemoryManager(Friend)
+    unpatch_info, default_save = patch_models("django_app")
+    # the model is patched to make sure that Friend.objects.* comes from
+    # memory and not from the database
     memory_person = Friend.objects.get(id=1)
 
     assert memory_person.dog == dog
     assert memory_person.dog.name == dog.name
     assert memory_person.other_dog == other_dog
     assert memory_person.other_dog.name == other_dog.name
+    assert isinstance(Friend.objects, MemoryManager)
 
     connection.creation.destroy_test_db(old_name, 1)
     teardown_test_environment()
+
+    # we must do that to not break other tests
+    unpatch_models("django_app", unpatch_info, default_save)
 
 def test_m2m():
     setup_test_environment()
@@ -161,8 +172,12 @@ def test_m2m_with_through():
     connection.creation.destroy_test_db(old_name, 1)
     teardown_test_environment()
 
-def test_patch_models():
-    patch_models("django_app")
+def test_patch_and_unpatch_models():
+    '''
+        The idea here is to patch a model, call save and fetch from memory
+        as you do with regular django models
+    '''
+    unpatch_info, default_save = patch_models("django_app")
 
     friend = Friend()
     friend.name = "Name"
@@ -170,3 +185,6 @@ def test_patch_models():
 
     assert isinstance(Friend.objects, MemoryManager)
     assert list(Friend.objects.all()) == [friend]
+
+    unpatch_models("django_app", unpatch_info, default_save)
+    assert not isinstance(Friend.objects, MemoryManager)
