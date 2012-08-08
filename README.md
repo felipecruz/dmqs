@@ -5,6 +5,8 @@ The initial motivation is to speed up fixture loading in Django.
 
 dmqs could be used for many testing and learning purposes.
 
+[![Build Status](https://secure.travis-ci.org/felipecruz/dmqs.png)](http://travis-ci.org/felipecruz/dmqs)
+
 Tests
 -----
 
