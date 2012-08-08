@@ -294,7 +294,7 @@ def test_query_delete():
 
     queryset = MemoryQuerySet(person1.__class__, data=data)
     repository = Repository()
-    repository.__dict__['Person'] = data
+    repository.__dict__['data']['Person'] = data
 
     queryset.filter(age__gte=10,birthday__lte=date(2011, 05, 05)).delete()
     assert len(queryset.all()) == 2

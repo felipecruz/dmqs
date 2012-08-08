@@ -35,10 +35,9 @@ def fetch_relation_id(object, name):
         raise Exception("Unknow Field {0}".format(name))
 
 def patch_models(app_name):
-    def custom_save(sender, **kwargs):
-        instance = kwargs.get('instance')
-        instance.save = partial(memory_save, instance)
     app = get_app(app_name)
     for model in get_models(app):
-        post_init.connect(model, custom_save)
         model.objects = MemoryManager(model)
+
+    from django.db.models import Model
+    Model.save = memory_save

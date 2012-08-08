@@ -154,10 +154,19 @@ def test_m2m_with_through():
     Friendship.objects.all().delete()
 
     memorify_m2m(friend, best_friend.m2m_data)
-
     assert isinstance(friend.__dict__['best_friends'], MemoryManager)
     assert list(friend.__dict__['best_friends'].all()) == [best_friend, best_friend2]
     assert list(friend.__dict__['best_friends'].filter(nickname__endswith="2")) == [best_friend2]
 
     connection.creation.destroy_test_db(old_name, 1)
     teardown_test_environment()
+
+def test_patch_models():
+    patch_models("django_app")
+
+    friend = Friend()
+    friend.name = "Name"
+    friend.save()
+
+    assert isinstance(Friend.objects, MemoryManager)
+    assert list(Friend.objects.all()) == [friend]

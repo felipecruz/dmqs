@@ -21,13 +21,13 @@ def test_repository_clean():
     update = repository.save(model_name, instance)
 
     assert update == False
-    assert repository.__dict__[model_name] == [instance]
-    assert type(repository.__dict__[model_name]) == list
-    assert repository.__dict__[model_name][0].id == 1
+    assert repository.__dict__['data'][model_name] == [instance]
+    assert type(repository.__dict__['data'][model_name]) == list
+    assert repository.__dict__['data'][model_name][0].id == 1
 
     repository.clean()
 
-    assert repository.__dict__ == {}
+    assert repository.__dict__['data'] == {}
 
 def test_repository_save():
     repository = Repository()
@@ -38,9 +38,9 @@ def test_repository_save():
     update = repository.save(model_name, instance)
 
     assert update == False
-    assert repository.__dict__[model_name] == [instance]
-    assert type(repository.__dict__[model_name]) == list
-    assert repository.__dict__[model_name][0].id == 1
+    assert repository.__dict__['data'][model_name] == [instance]
+    assert type(repository.__dict__['data'][model_name]) == list
+    assert repository.__dict__['data'][model_name][0].id == 1
 
 def test_repository_save_more():
     repository = Repository()
@@ -55,10 +55,10 @@ def test_repository_save_more():
 
     assert update1 == False
     assert update2 == False
-    assert repository.__dict__[model_name] == [instance, instance2]
-    assert type(repository.__dict__[model_name]) == list
-    assert repository.__dict__[model_name][0].id == 1
-    assert repository.__dict__[model_name][1].id == 2
+    assert repository.__dict__['data'][model_name] == [instance, instance2]
+    assert type(repository.__dict__['data'][model_name]) == list
+    assert repository.__dict__['data'][model_name][0].id == 1
+    assert repository.__dict__['data'][model_name][1].id == 2
 
 def test_repository_save_update():
     repository = Repository()
@@ -68,14 +68,14 @@ def test_repository_save_update():
     update = repository.save(model_name, instance)
 
     assert update == False
-    assert repository.__dict__[model_name] == [instance]
-    assert type(repository.__dict__[model_name]) == list
-    assert repository.__dict__[model_name][0].id == 1
+    assert repository.__dict__['data'][model_name] == [instance]
+    assert type(repository.__dict__['data'][model_name]) == list
+    assert repository.__dict__['data'][model_name][0].id == 1
 
     instance.__dict__['id'] = 2
     update = repository.save(model_name, instance)
 
-    assert repository.__dict__[model_name][0].id == 2
+    assert repository.__dict__['data'][model_name][0].id == 2
     assert update == True
 
 def test_repository_get_models():
