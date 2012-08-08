@@ -1,9 +1,8 @@
 from dmqs.repository import Repository
 
-def model_mock(model_name, _id):
+def model_mock(model_name):
     model = type(model_name, (object,), dict(id=lambda s: s.__dict__['id']))
     instance = model()
-    instance.__dict__['id'] = _id
     return instance
 
 def test_repository_shared_state():
@@ -17,7 +16,7 @@ def test_repository_clean():
     repository.clean()
 
     model_name = 'ModelName'
-    instance = model_mock(model_name, 1)
+    instance = model_mock(model_name)
     update = repository.save(model_name, instance)
 
     assert update == False
@@ -34,7 +33,7 @@ def test_repository_save():
     repository.clean()
 
     model_name = 'ModelName'
-    instance = model_mock(model_name, 1)
+    instance = model_mock(model_name)
     update = repository.save(model_name, instance)
 
     assert update == False
@@ -47,10 +46,10 @@ def test_repository_save_more():
     repository.clean()
 
     model_name = 'ModelName'
-    instance = model_mock(model_name, 1)
+    instance = model_mock(model_name)
     update1 = repository.save(model_name, instance)
 
-    instance2 = model_mock(model_name, 2)
+    instance2 = model_mock(model_name)
     update2 = repository.save(model_name, instance2)
 
     assert update1 == False
@@ -64,7 +63,7 @@ def test_repository_save_update():
     repository = Repository()
 
     model_name = 'ModelName'
-    instance = model_mock(model_name, 1)
+    instance = model_mock(model_name)
     update = repository.save(model_name, instance)
 
     assert update == False
@@ -83,10 +82,10 @@ def test_repository_get_models():
     repository.clean()
 
     model_name = 'ModelName'
-    instance = model_mock(model_name, 1)
+    instance = model_mock(model_name)
     update1 = repository.save(model_name, instance)
 
-    instance2 = model_mock(model_name, 2)
+    instance2 = model_mock(model_name)
     update2 = repository.save(model_name, instance2)
 
     assert update1 == False
@@ -98,10 +97,10 @@ def test_repository_delete():
     repository.clean()
 
     model_name = 'ModelName'
-    instance = model_mock(model_name, 1)
+    instance = model_mock(model_name)
     update1 = repository.save(model_name, instance)
 
-    instance2 = model_mock(model_name, 2)
+    instance2 = model_mock(model_name)
     update2 = repository.save(model_name, instance2)
 
     assert update1 == False

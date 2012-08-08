@@ -5,6 +5,7 @@ class Repository(object):
     def __init__(self):
         self.__dict__ = self.__shared_state
         self.__dict__['data'] = defaultdict(list)
+        self.__dict__['ids'] = defaultdict(int)
 
     def get_models(self, model_name):
         return self.__dict__['data'][model_name]
@@ -24,6 +25,9 @@ class Repository(object):
                 update = True
 
         if not update:
+            if not 'id' in value.__dict__:
+                self.__dict__['ids'][model_name] += 1
+                value.id = self.__dict__['ids'][model_name]
             self.get_models(model_name).append(value)
 
         return update
