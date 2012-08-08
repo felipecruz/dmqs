@@ -27,10 +27,6 @@ def memorify_m2m(object, m2m_data):
             ids = map(lambda x: int(x), v)
             MemoryQuerySet.fetch_from_repo = True
             object.__dict__[field.name] = MemoryManager(klass, default_filters=dict(id__in=ids))
-            #else:
-            #    klass = field.rel.through
-            #    ids = [x.id for x in MemoryManager(klass, default_filters=dict(id=object.id)).all().data]
-            #    object.__dict__[field.name] = MemoryManager(klass, default_filters=dict(id__in=ids))
 
 def fetch_relation_id(object, name):
     try:
