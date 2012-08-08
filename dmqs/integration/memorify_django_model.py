@@ -54,4 +54,3 @@ def unpatch_models(app_name, unpatch_info, default_save):
     app = get_app(app_name)
     for model in get_models(app):
         model.objects = unpatch_info[model]
-
