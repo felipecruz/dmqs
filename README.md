@@ -1,42 +1,42 @@
 dmqs
 ====
 
+This is an in-memory backend implementation for the django models. With dmqs it's possible to load Models, patch them,
+and a call to `model_instance.save()` will never hit the database. You can still perform `Model.objects.all()` and
+the result will work like if django was running with sqlite in memory, but even faster.
+
 The initial motivation is to speed up fixture loading in Django.
 
-dmqs could be used for many testing and learning purposes.
+dmqs could be used for many testing and learning purposes, focusing on Testing.
 
 [![Build Status](https://secure.travis-ci.org/felipecruz/dmqs.png)](http://travis-ci.org/felipecruz/dmqs)
 
 Tests
 -----
 
-Install pytest:
+First time:
 
-`pip install pytest`
+`pip install -r requirements.txt`
 
-How I test:
+To actually run the tests:
 
-`py.test --verbose .`
+`make test`
 
-First Goal
-----------
+Coverage report:
 
-Calls to model_instance.save(), will be executed on a "in memory" Repository.
+`make coverage`
 
-The Repository is known by MemoryManagers, which return MemoryQuerySet objects.
+Satus
+-----
 
-After a `person.save()` it will be possible to call `Person.objects.all()` without
-hit the database. It'll be just a python list iteration.
+In few weeks I expect to release a beta version. The integration with django test mechanism isn't ready yet.
 
-When a fixture is loaded for the first time and repository data goes to memory, it will
-be possible to pickle the Repository dictionary and every model inside of it. If the same
-fixture is used again, we can unpickle the repository data and skip this **slow** 
-(fludh db, deserialize fixture, save each model) proccess
 
-This way, even with big fixtures used all over the test code, this process should speed up a lot.
-
-Contact
+Authors
 -------
 
 Felipe Cruz
 felipecruz@loogica.net
+
+Thiago Garcia
+thiagogds14@gmail.com

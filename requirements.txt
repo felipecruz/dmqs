@@ -1,3 +1,12 @@
 Django==1.2.5
 py==1.4.9
 pytest==2.2.4
+Django==1.2.5
+argparse==1.2.1
+cov-core==1.6
+coverage==3.5.2
+distribute==0.6.24
+py==1.4.9
+pytest==2.2.4
+pytest-cov==1.6
+wsgiref==0.1.2
