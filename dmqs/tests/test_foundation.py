@@ -113,6 +113,17 @@ def test_nested_condition_iexact():
 
     assert evaluate_condition(dog, "owner__name__iexact")("name") == True
 
+def test_nested_condition_doesnt_exist():
+    person = type_and_instance('Person',
+                                name="Name",
+                                nickname=None,
+                                age=20,
+                                memory=True)
+
+    dog = type_and_instance('Dog', memory=True)
+
+    assert evaluate_condition(dog, "owner__name__iexact")("name") == False
+
 def test_nested_condition_gt():
     person = type_and_instance('Person',
                                 name="Name",

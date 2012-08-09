@@ -83,6 +83,9 @@ def iregex_condition(model_instance, prop, arg1):
 
 def evaluate_condition(obj, value):
     elements = value.split('__')
+    if not hasattr(obj, elements[0]):
+        #we can inspect the object to return False or raise an attribute error
+        return lambda value: False
     if elements == [value]:
         return partial(eq_condition, obj, value)
     elif elements[1] == "exact":
