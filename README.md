@@ -22,7 +22,14 @@ To actually run the tests:
 
 `make test`
 
-Coverage report:
+Coverage Report
+---------------
+
+First time:
+
+`pip install -r coverage_requirements.txt`
+
+And then:
 
 `make coverage`
 
