@@ -5,6 +5,7 @@ from operator import attrgetter
 
 from foundation import evaluate_condition, find_groups, mixed_sort
 from repository import Repository
+from aggregation import Count
 
 repository = Repository()
 
@@ -50,6 +51,8 @@ class MemoryQuerySet(object):
 
     def annotate(self, **kwargs):
         for k, v in kwargs.items():
+            if v.__class__.__name__ == 'Count':
+                v = Count(v.lookup)
             v.return_value(self.data, k)
         return self._data_qs(self.data)
 
