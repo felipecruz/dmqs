@@ -99,6 +99,9 @@ class MemoryQuerySet(object):
     def in_bulk(self, id_list):
         pass
 
+    def __getitem__(self, key):
+        return self.data[key]
+
     def delete(self):
         repository.delete(self.model_name, self.data)
         self.data = repository.get_models(self.model_name)
