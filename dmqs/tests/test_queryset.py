@@ -69,6 +69,63 @@ def test_query_filter():
     assert set(queryset.filter(name="Name 2", nickname="Nickname 2")) == \
            set([person2])
 
+def test_query_values():
+    person1 = type_and_instance('Person',
+                                name="Name 1",
+                                nickname="Nickname 1",
+                                memory=True)
+
+    person2 = type_and_instance('Person',
+                                name="Name 2",
+                                nickname="Nickname 2",
+                                memory=True)
+
+    person3 = type_and_instance('Person',
+                                name="Name 2",
+                                nickname="Nickname 3",
+                                memory=True)
+
+    data = [person1, person2, person3]
+    queryset = MemoryQuerySet(person1.__class__, data=data)
+
+    assert queryset.values() == [person1.__dict__,
+                                 person2.__dict__,
+                                 person3.__dict__]
+
+    assert queryset.values("name") == [{'name': "Name 1"},
+                                       {'name': "Name 2"},
+                                       {'name': "Name 2"}]
+
+def test_query_values_list():
+    person1 = type_and_instance('Person',
+                                name="Name 1",
+                                nickname="Nickname 1",
+                                memory=True)
+
+    person2 = type_and_instance('Person',
+                                name="Name 2",
+                                nickname="Nickname 2",
+                                memory=True)
+
+    person3 = type_and_instance('Person',
+                                name="Name 2",
+                                nickname="Nickname 3",
+                                memory=True)
+
+    data = [person1, person2, person3]
+    queryset = MemoryQuerySet(person1.__class__, data=data)
+
+    assert queryset.values_list() == [tuple(person1.__dict__.values()),
+                                      tuple(person2.__dict__.values()),
+                                      tuple(person3.__dict__.values())]
+
+    assert queryset.values_list("name") == [("Name 1",),
+                                            ("Name 2",),
+                                            ("Name 2",)]
+
+    assert queryset.values_list("name", flat=True) == ["Name 1",
+                                                       "Name 2",
+                                                       "Name 2"]
 def test_query_exclude():
     person1 = type_and_instance_attr_eq('Person',
                                 name="Name 1",

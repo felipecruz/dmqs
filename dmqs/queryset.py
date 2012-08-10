@@ -154,6 +154,33 @@ class MemoryQuerySet(object):
 
         return self._data_qs(data)
 
+    def values_list(self, *args, **kwargs):
+        flat = kwargs.get('flat', False)
+        models = []
+        for model in self._safe_data:
+            if args:
+                return_val = tuple(model.__dict__[attr_name] for attr_name
+                                                             in args)
+            else:
+                return_val = tuple(model.__dict__.values())
+            if flat:
+                return_val = return_val[0]
+            models.append(return_val)
+        return models
+
+    def values(self, *args, **kwargs):
+        models = []
+        for model in self._safe_data:
+            if args:
+                return_dict = {}
+                for attr_name in args:
+                    return_dict[attr_name] = model.__dict__[attr_name]
+            else:
+                return_dict = model.__dict__
+            models.append(return_dict)
+
+        return models
+
     @property
     def _safe_data(self):
         if self.fetch_from_repo:
