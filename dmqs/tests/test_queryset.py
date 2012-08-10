@@ -123,9 +123,9 @@ def test_query_values_list():
                                             ("Name 2",),
                                             ("Name 2",)]
 
-    assert queryset.values_list("name", flat=True) == ["Name 1",
-                                                       "Name 2",
-                                                       "Name 2"]
+    assert list(queryset.values_list("name", flat=True)) == ["Name 1",
+                                                             "Name 2",
+                                                             "Name 2"]
 def test_query_exclude():
     person1 = type_and_instance_attr_eq('Person',
                                 name="Name 1",

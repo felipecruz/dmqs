@@ -159,13 +159,20 @@ class MemoryQuerySet(object):
         models = []
         for model in self._safe_data:
             if args:
-                return_val = tuple(model.__dict__[attr_name] for attr_name
-                                                             in args)
+                try:
+                    return_val = tuple(model.__dict__[attr_name] for attr_name
+                                                                 in args)
+                except KeyError:
+                    return_val = tuple(getattr(model,attr_name) for attr_name
+                                                                in args)
             else:
                 return_val = tuple(model.__dict__.values())
             if flat:
                 return_val = return_val[0]
             models.append(return_val)
+
+        if flat:
+            return self._data_qs(models)
         return models
 
     def values(self, *args, **kwargs):
