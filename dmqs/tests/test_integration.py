@@ -101,8 +101,8 @@ def test_m2m():
 
     memorify_m2m(other_friend, other_friend.m2m_data)
 
-    assert isinstance(other_friend.__dict__['friends'], MemoryManager)
-    assert list(other_friend.__dict__['friends'].all()) == [friend]
+    assert isinstance(other_friend.friends, MemoryManager)
+    assert list(other_friend.friends.all()) == [friend]
 
     connection.creation.destroy_test_db(old_name, 1)
     teardown_test_environment()
@@ -117,6 +117,9 @@ def test_m2m_with_through():
 
     from dmqs.repository import Repository
     repository = Repository()
+
+    #unpatch_info, default_save = patch_models("django_app")
+    #unpatch_models("django_app", unpatch_info, default_save)
 
     friend = Friend(name="Friend")
     friend.save()
@@ -143,13 +146,11 @@ def test_m2m_with_through():
     friendship.best_friend2 = friend
     friendship.save()
 
-    friendship = Friendship()
-    friendship.since = date.today()
-    friendship.best_friend1 = best_friend2
-    friendship.best_friend2 = friend
-    friendship.save()
-
-    assert list(friend.best_friends.all()) == [best_friend, best_friend2]
+    friendship2 = Friendship()
+    friendship2.since = date.today()
+    friendship2.best_friend1 = best_friend2
+    friendship2.best_friend2 = friend
+    friendship2.save()
 
     repository.save(Friend.__name__, other_friend)
     repository.save(Friend.__name__, other_friend2)
@@ -157,17 +158,19 @@ def test_m2m_with_through():
     repository.save(BestFriend.__name__, best_friend)
     repository.save(BestFriend.__name__, best_friend2)
     repository.save(Friendship.__name__, friendship)
+    repository.save(Friendship.__name__, friendship2)
 
-    best_friend.m2m_data = {'best_friends': [1,2]}
+    best_friend.m2m_data = {}
 
     Friend.objects.all().delete()
     BestFriend.objects.all().delete()
     Friendship.objects.all().delete()
 
     memorify_m2m(friend, best_friend.m2m_data)
-    assert isinstance(friend.__dict__['best_friends'], MemoryManager)
-    assert list(friend.__dict__['best_friends'].all()) == [best_friend, best_friend2]
-    assert list(friend.__dict__['best_friends'].filter(nickname__endswith="2")) == [best_friend2]
+
+    assert isinstance(friend.best_friends, MemoryManager)
+    assert list(friend.best_friends.all()) == [best_friend, best_friend2]
+    assert list(friend.best_friends.filter(nickname__endswith="2")) == [best_friend2]
 
     connection.creation.destroy_test_db(old_name, 1)
     teardown_test_environment()
