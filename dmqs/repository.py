@@ -20,12 +20,19 @@ class Repository(object):
         update = False
 
         for i, model in enumerate(self.get_models(model_name)):
-            if model.id == value.id:
-                self.get_models(model_name)[i] = value
-                update = True
+            try:
+                if model.id == value.id:
+                    self.get_models(model_name)[i] = value
+                    update = True
+            except:
+                pass
 
         if not update:
-            if getattr(value, 'id') == None:
+            try:
+                if getattr(value, 'id') == None:
+                    self.__dict__['ids'][model_name] += 1
+                    value.id = self.__dict__['ids'][model_name]
+            except:
                 self.__dict__['ids'][model_name] += 1
                 value.id = self.__dict__['ids'][model_name]
             self.get_models(model_name).append(value)

@@ -10,14 +10,15 @@ import sys
 import os
 import gzip
 import zipfile
-from optparse import make_option
 import traceback
+from optparse import make_option
+from copy import deepcopy
 
 from django.test import TestCase
 from django.db import (transaction, connection, connections, DEFAULT_DB_ALIAS,
     reset_queries)
-
 from django.conf import settings
+
 from django.core import serializers
 from django.core.management.base import BaseCommand
 from django.core.management.color import no_style
@@ -35,9 +36,13 @@ except ImportError:
 from dmqs.manager import MemoryManager
 from dmqs.queryset import MemoryQuerySet
 from dmqs.foundation import memory_save
+from dmqs.repository import Repository
 from dmqs.integration.memorify_django_model import memorify_m2m, \
-                                                   memorify_single_relations
+                                                   memorify_single_relations, \
+                                                   patch_models, \
+                                                   unpatch_models
 from functools import partial
+_cache ={}
 
 class MemoryTestCase(TestCase):
     def _fixture_setup(self):
@@ -131,8 +136,6 @@ class MemoryTestCase(TestCase):
         app_fixtures = [os.path.join(os.path.dirname(path), 'fixtures') for path in app_module_paths]
 
         instances = []
-
-        #import pdb; pdb.set_trace()
 
         try:
             #with connection.constraint_checks_disabled():
@@ -294,16 +297,26 @@ class MemoryTestCase(TestCase):
                 self.stdout.write("Installed %d object(s) (of %d) from %d fixture(s)\n" % (
                     loaded_object_count, fixture_object_count, fixture_count))
 
+        apps = set()
+
         for obj in instances:
             #if obj.object.__class__.__name__ == 'Friend':
             #    import pdb; pdb.set_trace() ### XXX BREAKPOINT
 
             memorify_m2m(obj.object, obj.m2m_data)
             memorify_single_relations(obj.object)
+            apps.add(obj.object._meta.app_label)
 
+        self.apps_config = []
+        for app_name in settings.INSTALLED_APPS:
+            real_app_name = app_name.split('.')[-1]
+            self.apps_config.append((real_app_name, patch_models(real_app_name)))
 
         for model in models:
             model.objects = MemoryManager(model)
+
+        #repository = Repository()
+        #_cache[fixture_label] = deepcopy(repository.__dict__)
 
         # Close the DB connection. This is required as a workaround for an
         # edge case in MySQL: if the same connection is used to
@@ -313,6 +326,23 @@ class MemoryTestCase(TestCase):
             connection.close()
 
     def _fixture_teardown(self):
-        from dmqs.repository import Repository
         repository = Repository()
         repository.clean()
+        from django.utils.importlib import *
+
+        #for app_name, patch in self.apps_config:
+        #unpatch_models(app_name, *patch)
+
+        from django.db.models.loading import AppCache
+        cache = AppCache()
+
+        for app in cache.get_apps():
+            __import__(app.__name__)
+            reload(app)
+
+        from django.utils.datastructures import SortedDict
+        cache.app_store = SortedDict()
+        cache.app_models = SortedDict()
+        cache.app_errors = {}
+        cache.handled = {}
+        cache.loaded = False

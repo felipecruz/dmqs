@@ -7,12 +7,17 @@ from repository import Repository
 repository = Repository()
 
 def memory_save(self, *args, **kwargs):
+    if 'pk' in self.__dict__:
+        self.__dict__['id'] = self.__dict__['pk']
     repository.save(self.__class__.__name__, self)
 
 def eq_condition(model_instance, prop, arg1):
     if arg1 == None:
         return isnull_condition(model_instance, prop)
-    return model_instance.__dict__[prop] == arg1
+    try:
+        return model_instance.__dict__[prop] == arg1
+    except KeyError:
+        return getattr(model_instance, prop) == arg1
 
 def iexact_condition(model_instance, prop, arg1):
     return model_instance.__dict__[prop].upper() == arg1.upper()
@@ -134,11 +139,15 @@ def evaluate_condition(obj, value):
         return evaluate_condition(getattr(obj,elements[0]),
                                   value[len(elements[0])+2:])
 
+#def hide_django(value)
 
 def get_attribute(value, property_name):
     elements = property_name.split("__")
     if elements == [property_name]:
-        return value.__dict__[property_name]
+        if not property_name in value.__dict__:
+            return getattr(value, property_name)
+        else:
+            return value.__dict__[property_name]
     else:
         return get_attribute(value.__dict__[elements[0]],
                              '__'.join(elements[1:]))

@@ -1,0 +1,104 @@
+'''
+return new QuerySets
+                            filter
+                            exclude
+annotate
+                            order_by
+reverse
+distinct
+values
+values_list
+dates
+none
+                            all
+select_related
+prefetch_related
+extra
+defer
+only
+using
+select_for_update
+
+
+do not return QuerySets
+                            get
+create
+get_or_create
+bulk_create
+                            count
+in_bulk
+iterator
+latest
+aggregate
+exists
+                            update
+delete
+
+
+
+Aggregation functions
+Django provides the following aggregation functions in the django.db.models module. For details on how to use these aggregate functions, see the topic guide on aggregation.
+
+Avg
+class Avg(field)
+Returns the mean value of the given field, which must be numeric.
+
+Default alias: <field>__avg
+Return type: float
+Count
+class Count(field, distinct=False)
+Returns the number of objects that are related through the provided field.
+
+Default alias: <field>__count
+Return type: int
+Has one optional argument:
+
+distinct
+If distinct=True, the count will only include unique instances. This is the SQL equivalent of COUNT(DISTINCT <field>). The default value is False.
+
+Max
+class Max(field)
+Returns the maximum value of the given field.
+
+Default alias: <field>__max
+Return type: same as input field
+Min
+class Min(field)
+Returns the minimum value of the given field.
+
+Default alias: <field>__min
+Return type: same as input field
+StdDev
+class StdDev(field, sample=False)
+Returns the standard deviation of the data in the provided field.
+
+Default alias: <field>__stddev
+Return type: float
+Has one optional argument:
+
+sample
+By default, StdDev returns the population standard deviation. However, if sample=True, the return value will be the sample standard deviation.
+
+SQLite
+SQLite doesn't provide StdDev out of the box. An implementation is available as an extension module for SQLite. Consult the SQlite documentation for instructions on obtaining and installing this extension.
+Sum
+class Sum(field)
+Computes the sum of all values of the given field.
+
+Default alias: <field>__sum
+Return type: same as input field
+Variance¶
+class Variance(field, sample=False)
+Returns the variance of the data in the provided field.
+
+Default alias: <field>__variance
+Return type: float
+Has one optional argument:
+
+sample
+By default, Variance returns the population variance. However, if sample=True, the return value will be the sample variance.
+
+
+
+'''
+

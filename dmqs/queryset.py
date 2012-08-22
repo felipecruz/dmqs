@@ -5,7 +5,7 @@ from operator import attrgetter
 
 from foundation import evaluate_condition, find_groups, mixed_sort
 from repository import Repository
-from aggregation import Count
+from aggregation import Count, Max, Min, Sum, Avg
 
 repository = Repository()
 
@@ -43,16 +43,50 @@ class MemoryQuerySet(object):
     def _data_qs(self, data):
         return MemoryQuerySet(self.model, data=data)
 
-    def aggregate(self, **kwargs):
-        _result = dict()
-        for k, v in kwargs.items():
-            _result[k] = v.return_value(self.data)
-        return _result
+    def aggregate(self, *args, **kwargs):
+        if len(kwargs) > 0:
+            _result = dict()
+            for k, v in kwargs.items():
+                if v.__class__.__name__ == 'Count':
+                    v = Count(v.lookup)
+                if v.__class__.__name__ == 'Max':
+                    v = Max(v.lookup)
+                if v.__class__.__name__ == 'Min':
+                    v = Min(v.lookup)
+                if v.__class__.__name__ == 'Sum':
+                    v = Sum(v.lookup)
+                if v.__class__.__name__ == 'Avg':
+                    v = Avg(v.lookup)
+                _result[k] = v.return_value(self.data)
+            return _result
+        elif len(args) > 0:
+            _result = dict()
+            for v in args:
+                if v.__class__.__name__ == 'Count':
+                    v = Count(v.lookup)
+                if v.__class__.__name__ == 'Max':
+                    v = Max(v.lookup)
+                if v.__class__.__name__ == 'Min':
+                    v = Min(v.lookup)
+                if v.__class__.__name__ == 'Sum':
+                    v = Sum(v.lookup)
+                if v.__class__.__name__ == 'Avg':
+                    v = Avg(v.lookup)
+                _result[k] = v.return_value(self.data)
+            return _result
 
     def annotate(self, **kwargs):
         for k, v in kwargs.items():
             if v.__class__.__name__ == 'Count':
                 v = Count(v.lookup)
+            if v.__class__.__name__ == 'Max':
+                v = Max(v.lookup)
+            if v.__class__.__name__ == 'Min':
+                v = Min(v.lookup)
+            if v.__class__.__name__ == 'Sum':
+                v = Sum(v.lookup)
+            if v.__class__.__name__ == 'Avg':
+                v = Avg(v.lookup)
             v.return_value(self.data, k)
         return self._data_qs(self.data)
 
@@ -143,6 +177,9 @@ class MemoryQuerySet(object):
         # references are alredy in memory
         return self.all()
 
+    def distinct(self):
+        return self._data_qs(self._safe_data)
+
     def all(self):
         return self._data_qs(self._safe_data)
 
@@ -167,7 +204,7 @@ class MemoryQuerySet(object):
     def values_list(self, *args, **kwargs):
         flat = kwargs.get('flat', False)
         models = []
-        for model in self._safe_data:
+        for model in self.data:
             if args:
                 try:
                     return_val = tuple(model.__dict__[attr_name] for attr_name
@@ -187,7 +224,7 @@ class MemoryQuerySet(object):
 
     def values(self, *args, **kwargs):
         models = []
-        for model in self._safe_data:
+        for model in self.data:
             if args:
                 return_dict = {}
                 for attr_name in args:
