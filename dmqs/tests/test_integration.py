@@ -37,20 +37,13 @@ def test_memorify_foreign_key():
 
     repository.save(Dog.__name__, dog)
 
-    other_dog = Dog(name="Dogao 2")
-    other_dog.save()
-
-    repository.save(Dog.__name__, other_dog)
-
     friend = Friend(name="Name")
     friend.dog = dog
-    friend.other_dog = other_dog
     friend.save()
 
     repository.save(Friend.__name__, friend)
 
     assert friend.dog == dog
-    assert friend.other_dog == other_dog
 
     memorify_single_relations(friend)
 
@@ -61,6 +54,50 @@ def test_memorify_foreign_key():
 
     assert memory_person.dog == dog
     assert memory_person.dog.name == dog.name
+    assert isinstance(Friend.objects, MemoryManager)
+
+    connection.creation.destroy_test_db(old_name, 1)
+    teardown_test_environment()
+
+    # we must do that to not break other tests
+    unpatch_models("django_app", unpatch_info, default_save)
+
+def test_memorify_one_to_one_field():
+    '''
+        The idea here is to create objects on the database, memorify
+        single relations (ForeignKey and OneToOne) and then check if
+        and check if the relation returns expected data from memory
+    '''
+    setup_test_environment()
+    old_name = "django_app"
+
+    from django.db import connection
+    old_name = connection.creation.create_test_db(verbosity=1, autoclobber=True)
+
+    from dmqs.repository import Repository
+    repository = Repository()
+
+    other_dog = Dog(name="Dogao 2")
+    other_dog.save()
+
+    repository.save(Dog.__name__, other_dog)
+
+    friend = Friend(name="Name")
+    friend.other_dog = other_dog
+    friend.save()
+
+    repository.save(Friend.__name__, friend)
+
+    assert friend.other_dog == other_dog
+
+    memorify_single_relations(friend)
+
+    unpatch_info, default_save = patch_models("django_app")
+    # the model is patched to make sure that Friend.objects.* comes from
+    # memory and not from the database
+
+    memory_person = Friend.objects.get(id=1)
+
     assert memory_person.other_dog == other_dog
     assert memory_person.other_dog.name == other_dog.name
     assert isinstance(Friend.objects, MemoryManager)
@@ -99,10 +136,17 @@ def test_m2m():
     BestFriend.objects.all().delete()
     Friendship.objects.all().delete()
 
+    unpatch_info, default_save = patch_models("django_app")
+
     memorify_m2m(other_friend, other_friend.m2m_data)
+
+    assert isinstance(other_friend.__dict__['friends'], MemoryManager)
+    assert list(other_friend.__dict__['friends'].all()) == [friend]
 
     assert isinstance(other_friend.friends, MemoryManager)
     assert list(other_friend.friends.all()) == [friend]
+
+    unpatch_models("django_app", unpatch_info, default_save)
 
     connection.creation.destroy_test_db(old_name, 1)
     teardown_test_environment()
@@ -118,9 +162,6 @@ def test_m2m_with_through():
     from dmqs.repository import Repository
     repository = Repository()
 
-    #unpatch_info, default_save = patch_models("django_app")
-    #unpatch_models("django_app", unpatch_info, default_save)
-
     friend = Friend(name="Friend")
     friend.save()
 
@@ -129,6 +170,9 @@ def test_m2m_with_through():
 
     other_friend2 = Friend(name="Name2")
     other_friend2.save()
+
+    other_friend3 = Friend(name="Name3")
+    other_friend3.save()
 
     best_friend = BestFriend()
     best_friend.person = other_friend
@@ -152,25 +196,48 @@ def test_m2m_with_through():
     friendship2.best_friend2 = friend
     friendship2.save()
 
+    friendship3 = Friendship()
+    friendship3.since = date.today()
+    friendship3.best_friend1 = best_friend2
+    friendship3.best_friend2 = other_friend3
+    friendship3.save()
+
     repository.save(Friend.__name__, other_friend)
     repository.save(Friend.__name__, other_friend2)
+    repository.save(Friend.__name__, other_friend3)
     repository.save(Friend.__name__, friend)
     repository.save(BestFriend.__name__, best_friend)
     repository.save(BestFriend.__name__, best_friend2)
     repository.save(Friendship.__name__, friendship)
     repository.save(Friendship.__name__, friendship2)
-
-    best_friend.m2m_data = {}
+    repository.save(Friendship.__name__, friendship3)
 
     Friend.objects.all().delete()
     BestFriend.objects.all().delete()
     Friendship.objects.all().delete()
 
-    memorify_m2m(friend, best_friend.m2m_data)
+    unpatch_info, default_save = patch_models("django_app")
+
+    memorify_m2m(friend, {})
+    memorify_m2m(other_friend3, {})
+
+    assert isinstance(friend.__dict__['best_friends'], MemoryManager)
+    assert list(friend.__dict__['best_friends'].all()) == [best_friend, best_friend2]
+    assert list(friend.__dict__['best_friends'].filter(nickname__endswith="2")) == [best_friend2]
+
+    assert isinstance(other_friend3.__dict__['best_friends'], MemoryManager)
+    assert list(other_friend3.__dict__['best_friends'].all()) == [best_friend2]
+    assert list(other_friend3.__dict__['best_friends'].filter(nickname__endswith="2")) == [best_friend2]
 
     assert isinstance(friend.best_friends, MemoryManager)
     assert list(friend.best_friends.all()) == [best_friend, best_friend2]
     assert list(friend.best_friends.filter(nickname__endswith="2")) == [best_friend2]
+
+    assert isinstance(other_friend3.best_friends, MemoryManager)
+    assert list(other_friend3.best_friends.all()) == [best_friend2]
+    assert list(other_friend3.best_friends.filter(nickname__endswith="2")) == [best_friend2]
+
+    unpatch_models("django_app", unpatch_info, default_save)
 
     connection.creation.destroy_test_db(old_name, 1)
     teardown_test_environment()
