@@ -9,7 +9,7 @@ from django.db.models.signals import post_init
 
 def memorify_single_relations(object):
     for field in object._meta.fields:
-        if field.__class__.__name__ != "ForeignKey":
+        if not field.__class__.__name__ in ("ForeignKey", "OneToOneField"):
             continue
         id = fetch_relation_id(object, field.name)
         MemoryQuerySet.fetch_from_repo = True
