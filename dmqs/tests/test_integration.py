@@ -47,7 +47,7 @@ def test_memorify_foreign_key():
 
     memorify_single_relations(friend)
 
-    unpatch_info, default_save = patch_models("django_app")
+    unpatch_info = patch_models("django_app")
     # the model is patched to make sure that Friend.objects.* comes from
     # memory and not from the database
     memory_person = Friend.objects.get(id=1)
@@ -60,7 +60,7 @@ def test_memorify_foreign_key():
     teardown_test_environment()
 
     # we must do that to not break other tests
-    unpatch_models("django_app", unpatch_info, default_save)
+    unpatch_models("django_app", unpatch_info)
 
 def test_memorify_one_to_one_field():
     '''
@@ -92,7 +92,7 @@ def test_memorify_one_to_one_field():
 
     memorify_single_relations(friend)
 
-    unpatch_info, default_save = patch_models("django_app")
+    unpatch_info = patch_models("django_app")
     # the model is patched to make sure that Friend.objects.* comes from
     # memory and not from the database
 
@@ -106,7 +106,7 @@ def test_memorify_one_to_one_field():
     teardown_test_environment()
 
     # we must do that to not break other tests
-    unpatch_models("django_app", unpatch_info, default_save)
+    unpatch_models("django_app", unpatch_info)
 
 def test_m2m():
     setup_test_environment()
@@ -136,7 +136,7 @@ def test_m2m():
     BestFriend.objects.all().delete()
     Friendship.objects.all().delete()
 
-    unpatch_info, default_save = patch_models("django_app")
+    unpatch_info = patch_models("django_app")
 
     memorify_m2m(other_friend, other_friend.m2m_data)
 
@@ -146,7 +146,7 @@ def test_m2m():
     assert isinstance(other_friend.friends, MemoryManager)
     assert list(other_friend.friends.all()) == [friend]
 
-    unpatch_models("django_app", unpatch_info, default_save)
+    unpatch_models("django_app", unpatch_info)
 
     connection.creation.destroy_test_db(old_name, 1)
     teardown_test_environment()
@@ -216,7 +216,7 @@ def test_m2m_with_through():
     BestFriend.objects.all().delete()
     Friendship.objects.all().delete()
 
-    unpatch_info, default_save = patch_models("django_app")
+    unpatch_info = patch_models("django_app")
 
     memorify_m2m(friend, {})
     memorify_m2m(other_friend3, {})
@@ -237,7 +237,7 @@ def test_m2m_with_through():
     assert list(other_friend3.best_friends.all()) == [best_friend2]
     assert list(other_friend3.best_friends.filter(nickname__endswith="2")) == [best_friend2]
 
-    unpatch_models("django_app", unpatch_info, default_save)
+    unpatch_models("django_app", unpatch_info)
 
     connection.creation.destroy_test_db(old_name, 1)
     teardown_test_environment()
@@ -247,7 +247,7 @@ def test_patch_and_unpatch_models():
         The idea here is to patch a model, call save and fetch from memory
         as you do with regular django models
     '''
-    unpatch_info, default_save = patch_models("django_app")
+    unpatch_info = patch_models("django_app")
 
     friend = Friend()
     friend.name = "Name"
@@ -256,5 +256,6 @@ def test_patch_and_unpatch_models():
     assert isinstance(Friend.objects, MemoryManager)
     assert list(Friend.objects.all()) == [friend]
 
-    unpatch_models("django_app", unpatch_info, default_save)
+    unpatch_models("django_app", unpatch_info)
     assert not isinstance(Friend.objects, MemoryManager)
+    assert not Friend.save == memory_save

@@ -36,7 +36,9 @@ from dmqs.manager import MemoryManager
 from dmqs.queryset import MemoryQuerySet
 from dmqs.foundation import memory_save
 from dmqs.integration.memorify_django_model import memorify_m2m, \
-                                                   memorify_single_relations
+                                                   memorify_single_relations, \
+                                                   patch_models, \
+                                                   unpatch_models
 from functools import partial
 
 class MemoryTestCase(TestCase):
@@ -131,8 +133,7 @@ class MemoryTestCase(TestCase):
         app_fixtures = [os.path.join(os.path.dirname(path), 'fixtures') for path in app_module_paths]
 
         instances = []
-
-        #import pdb; pdb.set_trace()
+        apps = set()
 
         try:
             #with connection.constraint_checks_disabled():
@@ -295,15 +296,14 @@ class MemoryTestCase(TestCase):
                     loaded_object_count, fixture_object_count, fixture_count))
 
         for obj in instances:
-            #if obj.object.__class__.__name__ == 'Friend':
-            #    import pdb; pdb.set_trace() ### XXX BREAKPOINT
-
             memorify_m2m(obj.object, obj.m2m_data)
             memorify_single_relations(obj.object)
+            apps.add(obj.object._meta.app_label)
 
-
-        for model in models:
-            model.objects = MemoryManager(model)
+        self.apps_config = []
+        for app_name in settings.INSTALLED_APPS:
+            real_app_name = app_name.split('.')[-1]
+            self.apps_config.append((real_app_name, patch_models(real_app_name)))
 
         # Close the DB connection. This is required as a workaround for an
         # edge case in MySQL: if the same connection is used to
@@ -316,3 +316,6 @@ class MemoryTestCase(TestCase):
         from dmqs.repository import Repository
         repository = Repository()
         repository.clean()
+
+        for restore_config in self.apps_config:
+            unpatch_models(restore_config[0], restore_config[1])

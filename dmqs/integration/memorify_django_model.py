@@ -7,6 +7,8 @@ from django.db.models.loading import get_app, get_models
 from django.db.models import Model
 from django.db.models.signals import post_init
 
+_default_save = Model.save
+
 def memorify_single_relations(object):
     for field in object._meta.fields:
         if not field.__class__.__name__ in ("ForeignKey", "OneToOneField"):
@@ -142,16 +144,24 @@ def patch_models(app_name):
         model.objects = MemoryManager(model)
 
     from django.db.models import Model
-    default_save = Model.save
     Model.save = memory_save
 
-    return unpatch_info, default_save
+    return unpatch_info
 
-def unpatch_models(app_name, unpatch_info, default_save):
+def funcToMethod(func, clas, method_name=None):
+    '''
+        code from: http://code.activestate.com/recipes/81732-dynamically-added-methods-to-a-class/#c1
+    '''
+    import new
+    method = new.instancemethod(func,None,clas)
+    if not method_name: method_name=func.__name__
+    setattr(clas, method_name, method)
+
+def unpatch_models(app_name, unpatch_info):
     from django.db.models import Model
-    Model.save = default_save
+    funcToMethod(_default_save, Model, method_name='save')
 
     app = get_app(app_name)
     for model in get_models(app):
-        model.objects = unpatch_info[model]['manager']
         restore_m2m_descriptors(model, unpatch_info[model]['descriptors'])
+        model.objects = unpatch_info[model]['manager']
