@@ -25,7 +25,7 @@ class MemoryManager(Manager):
                                   data=repository.\
                                        get_models(lazy_model)
                                  ).filter(**{filter_name:filter_val}
-                                 ).values_list(data_field_name, flat=True))
+                                 ).values_list(data_field_name, flat=True).data)
         if self.model_name in repository.get_names():
             if self.default_filters:
                 return MemoryQuerySet(self.model,

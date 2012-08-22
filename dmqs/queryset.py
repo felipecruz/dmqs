@@ -167,7 +167,7 @@ class MemoryQuerySet(object):
     def values_list(self, *args, **kwargs):
         flat = kwargs.get('flat', False)
         models = []
-        for model in self._safe_data:
+        for model in self.data:
             if args:
                 try:
                     return_val = tuple(model.__dict__[attr_name] for attr_name
@@ -187,7 +187,7 @@ class MemoryQuerySet(object):
 
     def values(self, *args, **kwargs):
         models = []
-        for model in self._safe_data:
+        for model in self.data:
             if args:
                 return_dict = {}
                 for attr_name in args:
