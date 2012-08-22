@@ -11,6 +11,22 @@ dmqs could be used for many testing and learning purposes, focusing on Testing.
 
 [![Build Status](https://secure.travis-ci.org/felipecruz/dmqs.png)](http://travis-ci.org/felipecruz/dmqs)
 
+Using
+-----
+
+Instead of TestCase use dmqs.integration.MemoryTestCase
+
+```python
+from dmqs.integration.testcase import MemoryTestCase
+
+class FastTest(MemoryTestCase):
+    fixtures = ['dmqs_app/tests/fixtures/fixture.json']
+
+    def test_friend(self):
+        friend = Friend.objects.get(id=1)
+        self.assertTrue(friend != None)
+```
+
 Tests
 -----
 
