@@ -12,7 +12,10 @@ def memory_save(self, *args, **kwargs):
 def eq_condition(model_instance, prop, arg1):
     if arg1 == None:
         return isnull_condition(model_instance, prop)
-    return model_instance.__dict__[prop] == arg1
+    try:
+        return model_instance.__dict__[prop] == arg1
+    except KeyError:
+        return False
 
 def iexact_condition(model_instance, prop, arg1):
     return model_instance.__dict__[prop].upper() == arg1.upper()
