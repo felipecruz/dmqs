@@ -1,5 +1,8 @@
 import pytest
 
+from django.core.exceptions import MultipleObjectsReturned, \
+                                    ObjectDoesNotExist
+
 from dmqs.queryset import MemoryQuerySet
 from dmqs.repository import Repository
 from dmqs.aggregation import Max, Min, Sum, Avg, Count
@@ -31,6 +34,8 @@ def type_and_instance_attr_eq(type_name, **kwargs):
     instance.__dict__ = kwargs
     instance.__dict__['id'] = instance_id
     instance_id += 1
+    setattr(new_class, 'DoesNotExist', ObjectDoesNotExist)
+    setattr(new_class, 'MultipleObjectsReturned', MultipleObjectsReturned)
     return instance
 
 def test_query_all():
@@ -400,8 +405,6 @@ def test_queryset_get():
     assert queryset.get(name="Name 1") == person1
     assert queryset.get(name="Name 1").name == person1.name
 
-    from django.core.exceptions import MultipleObjectsReturned, \
-                                       ObjectDoesNotExist
 
     with pytest.raises(ObjectDoesNotExist):
         queryset.get(name="Nobody")

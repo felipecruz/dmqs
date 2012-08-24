@@ -73,10 +73,10 @@ class MemoryQuerySet(object):
                 data.append(model)
 
         if len(data) > 1:
-            raise MultipleObjectsReturned()
+            raise self.model.MultipleObjectsReturned()
 
         if len(data) == 0:
-            raise ObjectDoesNotExist()
+            raise self.model.DoesNotExist()
 
         return data[0]
 
