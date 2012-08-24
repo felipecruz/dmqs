@@ -24,7 +24,14 @@ def memorify_single_relations(object):
 def memorify_m2m(object, m2m_data):
     for field in object._meta.many_to_many:
         klass = field.rel.to
-        if field.attname in m2m_data.keys() and field.rel.is_hidden():
+
+        # for some reason, User.groups has field.is_hidden() == None
+        if field.rel.is_hidden() == None:
+            hidden_field = True
+        else:
+            hidden_field = field.rel.is_hidden()
+
+        if field.attname in m2m_data.keys() and hidden_field:
             '''
                 A 'simple' many to many relationship, has is_hidden == True
                 because Django creates a 'hidden' class, from user point of view
@@ -49,7 +56,7 @@ def memorify_m2m(object, m2m_data):
             # change manager per model instance
             object.__dict__[field.name] = MemoryManager(klass, default_filters=dict(id__in=ids))
 
-        elif not field.rel.is_hidden():
+        elif not hidden_field:
             '''
                 A through relation)hip(is_hidden == False), is a many_to_many
                 rel where data comes from a query in the through class.
