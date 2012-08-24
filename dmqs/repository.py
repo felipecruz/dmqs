@@ -1,5 +1,16 @@
 from collections import defaultdict
 
+def fetch_primary_key(model_instance):
+    try:
+        return getattr(model_instance, 'id')
+    except:
+        try:
+            for field in model_instance._meta.fields:
+                if field.primary_key:
+                    return getattr(model_instance, field.name)
+        except:
+            return None
+
 class Repository(object):
     __shared_state = {}
     def __init__(self):
@@ -20,12 +31,12 @@ class Repository(object):
         update = False
 
         for i, model in enumerate(self.get_models(model_name)):
-            if model.id == value.id:
+            if fetch_primary_key(model) == fetch_primary_key(value):
                 self.get_models(model_name)[i] = value
                 update = True
 
         if not update:
-            if getattr(value, 'id') == None:
+            if fetch_primary_key(value) == None:
                 self.__dict__['ids'][model_name] += 1
                 value.id = self.__dict__['ids'][model_name]
             self.get_models(model_name).append(value)
