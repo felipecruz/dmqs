@@ -65,7 +65,9 @@ class MemoryQuerySet(object):
     def get(self, *args, **kwargs):
         data = []
         if 'pk' in kwargs:
-            kwargs['id'] = kwargs.pop('pk')
+            kwargs['id'] = int(kwargs.pop('pk'))
+        if 'id' in kwargs:
+            kwargs['id'] = int(kwargs['id'])
 
         for model in self._safe_data:
             if all([evaluate_condition(model, k)(kwargs[k])
