@@ -13,6 +13,7 @@ from django.test.utils import setup_test_environment, \
                               teardown_test_environment
 
 from django_app.models import Friend, Dog, BestFriend, Friendship, Stranger
+from django.contrib.auth.models import User, Group
 
 from dmqs.manager import MemoryManager
 
@@ -32,7 +33,6 @@ def test_get_primary_key():
 
     connection.creation.destroy_test_db(old_name, 1)
     teardown_test_environment()
-
 
 def test_memorify_foreign_key():
     '''
@@ -255,6 +255,29 @@ def test_m2m_with_through():
     assert list(other_friend3.best_friends.filter(nickname__endswith="2")) == [best_friend2]
 
     unpatch_models("django_app", unpatch_info)
+
+    connection.creation.destroy_test_db(old_name, 1)
+    teardown_test_environment()
+
+def test_memorify_single_relation_hidden_None():
+    setup_test_environment()
+    old_name = "django_app"
+
+    from django.db import connection
+    old_name = connection.creation.create_test_db(verbosity=1, autoclobber=True)
+
+    user = User()
+    user.username = "test user"
+    user.save()
+
+    group = Group()
+    group.name = "test group"
+    group.save()
+
+    user.groups.add(group)
+    user.save()
+
+    memorify_m2m(user, {'groups': [1]})
 
     connection.creation.destroy_test_db(old_name, 1)
     teardown_test_environment()
