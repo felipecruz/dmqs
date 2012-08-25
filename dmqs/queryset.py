@@ -30,10 +30,6 @@ class MemoryQuerySet(object):
         return self
 
     def next(self):
-        # TODO improve this
-        if isinstance(self.data, self.__class__):
-            self.data = self.data.data
-
         if self.current >= len(self.data):
             raise StopIteration
         else:
