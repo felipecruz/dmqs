@@ -299,3 +299,20 @@ def test_patch_and_unpatch_models():
     unpatch_models("django_app", unpatch_info)
     assert not isinstance(Friend.objects, MemoryManager)
     assert not Friend.save == memory_save
+
+def test_manager_create():
+    '''
+        The idea here is to patch a model, call save and fetch from memory
+        as you do with regular django models
+    '''
+    unpatch_info = patch_models("django_app")
+
+    Friend.objects.create(name="Friend")
+    friend = Friend.objects.all()[0]
+
+    assert isinstance(Friend.objects, MemoryManager)
+    assert list(Friend.objects.all()) == [friend]
+
+    unpatch_models("django_app", unpatch_info)
+    assert not isinstance(Friend.objects, MemoryManager)
+    assert not Friend.save == memory_save

@@ -39,7 +39,7 @@ class MemoryManager(Manager):
         return MemoryQuerySet(self.model)
 
     def create(self, *args, **kwargs):
-        return self.model(**kwargs)
+        return self.model(**kwargs).save()
 
     def add(self, instance):
         repository.save(self.model_name, instance)
