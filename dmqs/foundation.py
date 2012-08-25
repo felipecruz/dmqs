@@ -55,7 +55,11 @@ def isnull_condition(model_instance, prop, arg1=None):
     try:
         cond = model_instance.__dict__[prop] == None
     except KeyError:
-        cond = getattr(model_instance, prop) == None
+        try:
+            cond = getattr(model_instance, prop) == None
+        except AttributeError:
+            # TODO raise AttributeError or somethig
+            return False
     return cond
 
 def in_condition(model_instance, prop, arg1):

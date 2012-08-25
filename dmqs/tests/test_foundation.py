@@ -1,7 +1,7 @@
 from datetime import date, datetime
 
 from dmqs.foundation import evaluate_condition, find_groups, mixed_sort, \
-                            get_attribute
+                            get_attribute, eq_condition
 
 def type_and_instance(type_name, **kwargs):
     new_class = type(type_name, (object,), {})
@@ -30,6 +30,18 @@ def test_condition_equal():
 
     assert evaluate_condition(person, "name")("Name") == True
     assert evaluate_condition(person, "name__exact")("Name") == True
+    assert evaluate_condition(person, "dont_have_this_attr")("Name") == False
+    assert evaluate_condition(person, "dont_have_this_attr")(None) == False
+
+def test_eq_condition():
+    person = type_and_instance('Person',
+                                name="Name",
+                                nickname="Nickname",
+                                age=20,
+                                memory=True)
+
+    assert eq_condition(person, "dont_have_this_attr", "Name") == False
+    assert eq_condition(person, "dont_have_this_attr", None) == False
 
 def test_condition_iexact():
     person = type_and_instance('Person',
