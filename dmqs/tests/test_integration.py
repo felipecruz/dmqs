@@ -7,15 +7,32 @@ sys.path.append('./dmqs/')
 os.environ['DJANGO_SETTINGS_MODULE'] = 'mock_settings'
 
 from dmqs.integration.memorify_django_model import *
+from dmqs.integration.utils import fetch_primary_key
 
 from django.test.utils import setup_test_environment, \
                               teardown_test_environment
 
-from django_app.models import Friend, Dog, BestFriend, Friendship
+from django_app.models import Friend, Dog, BestFriend, Friendship, Stranger
 
 from dmqs.manager import MemoryManager
 
 import pytest
+
+def test_get_primary_key():
+    setup_test_environment()
+    old_name = "django_app"
+
+    from django.db import connection
+    old_name = connection.creation.create_test_db(verbosity=1, autoclobber=True)
+
+    stranger = Stranger(name="12")
+    stranger.save()
+
+    assert "12" == fetch_primary_key(stranger)
+
+    connection.creation.destroy_test_db(old_name, 1)
+    teardown_test_environment()
+
 
 def test_memorify_foreign_key():
     '''

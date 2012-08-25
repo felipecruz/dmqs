@@ -1,15 +1,5 @@
 from collections import defaultdict
-
-def fetch_primary_key(model_instance):
-    try:
-        return getattr(model_instance, 'id')
-    except:
-        try:
-            for field in model_instance._meta.fields:
-                if field.primary_key:
-                    return getattr(model_instance, field.name)
-        except:
-            return None
+from dmqs.integration.utils import fetch_primary_key
 
 class Repository(object):
     __shared_state = {}
