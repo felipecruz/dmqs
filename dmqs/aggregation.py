@@ -62,13 +62,6 @@ class Count(object):
         for d in data:
             if not aggregate_name:
                 aggregate_name = "{0}__count".format(self.property_name)
-
             collection = getattr(d, self.property_name)
-            if not isinstance(collection, list):
-                if isinstance(collection.all().data, list):
-                    collection = collection.all().data
-                elif isinstance(collection.all().data.data, list):
-                    collection = collection.all().data.data
-
             setattr(d, aggregate_name, len(collection))
         return data
