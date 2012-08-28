@@ -31,7 +31,7 @@ def memorify_m2m(object, m2m_data):
         else:
             hidden_field = field.rel.is_hidden()
 
-        if field.attname in m2m_data.keys() and hidden_field:
+        if field.name in m2m_data.keys() and hidden_field:
             '''
                 A 'simple' many to many relationship, has is_hidden == True
                 because Django creates a 'hidden' class, from user point of view
@@ -50,7 +50,7 @@ def memorify_m2m(object, m2m_data):
 
                 which means, this model instance is friend of friend.id == 2
             '''
-            ids = map(lambda x: int(x), m2m_data[field.attname])
+            ids = map(lambda x: int(x), m2m_data[field.name])
             MemoryQuerySet.fetch_from_repo = True
 
             # change manager per model instance
