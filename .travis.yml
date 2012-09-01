@@ -6,8 +6,5 @@ env:
   - DJANGO_VERSION=1.3.1
   - DJANGO_VERSION=1.4
 install:
- - pip install -r travis_requirements.txt --use-mirrors
-   # Install whatever version of Django that's listed above
-   # Travis is currently working on
  - pip install -q Django==$DJANGO_VERSION --use-mirrors
 script: make test
