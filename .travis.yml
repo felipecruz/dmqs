@@ -8,3 +8,5 @@ env:
 install:
  - pip install -q Django==$DJANGO_VERSION --use-mirrors
 script: make test
+notifications:
+    irc: "irc.freenode.org#loogica"
